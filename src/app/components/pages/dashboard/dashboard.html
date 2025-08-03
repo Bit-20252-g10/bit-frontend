@@ -106,7 +106,7 @@
 
         <div class="image-upload-section">
           <label for="gameImage" class="file-upload-label">
-            <span class="upload-icon">📷</span>
+            <span class="upload-icon"><i class="bi bi-camera"></i></span>
             {{ selectedFile ? selectedFile.name : 'Seleccionar imagen del juego' }}
           </label>
           <input
@@ -173,7 +173,7 @@
         </div>
         <div class="image-upload-section">
           <label for="consoleImage" class="file-upload-label">
-            <span class="upload-icon">📷</span>
+            <span class="upload-icon"><i class="bi bi-camera"></i></span>
             {{ newConsole.selectedFile ? newConsole.selectedFile.name : 'Seleccionar imagen de la consola' }}
           </label>
           <input type="file" id="consoleImage" accept="image/*" (change)="onConsoleImageSelected($event)" style="display: none;" />

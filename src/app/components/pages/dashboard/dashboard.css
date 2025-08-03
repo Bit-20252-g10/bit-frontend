@@ -21,7 +21,7 @@
   position: absolute;
   top: 32px;
   right: 48px;
-  padding: var(--spacing-xs) var(--spacing-md);
+  /* padding: var(--spacing-xs) var(--spacing-md); */
   font-size: 0.95rem;
   border-radius: var(--border-radius-sm);
   background: var(--error);
@@ -222,6 +222,41 @@
 }
 .add-product-form {
   margin-top: var(--spacing-lg);
+}
+
+.image-upload-section {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  border: 1.5px solid var(--border-primary);
+  transition: background 0.2s, color 0.2s;
+}
+
+.file-upload-label:hover,
+.file-upload-label:focus {
+  background: var(--primary-blue);
+  color: var(--pure-white);
+}
+
+.upload-icon {
+  font-size: 1.3rem;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 900px) {
