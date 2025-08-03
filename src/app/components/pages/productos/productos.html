@@ -1,0 +1,76 @@
+<div class="products-container">
+  <div class="products-header">
+    <h1><i class="bi bi-bag"></i> Productos</h1>
+    <p class="products-subtitle">Explora nuestra amplia selección de juegos por consola</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando productos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-container">
+    <p>{{ error }}</p>
+    <button (click)="loadProducts()" class="btn btn-primary">Reintentar</button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section" *ngIf="!isLoading && !error">
+    <form class="filters-form">
+      <label>
+        Categoría:
+        <select [(ngModel)]="selectedCategory" name="category" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </label>
+      <label>
+        Tipo:
+        <select [(ngModel)]="selectedType" name="type" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+        </select>
+      </label>
+      <label>
+        Precio:
+        <select [(ngModel)]="selectedPriceRange" name="priceRange" (change)="applyFilters()">
+          <option *ngFor="let range of priceRanges" [value]="range.label">{{ range.label }}</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" [(ngModel)]="showOnlyInStock" name="inStock" (change)="applyFilters()" /> Solo en stock
+      </label>
+      <button type="button" class="btn btn-secondary" (click)="clearFilters()">Limpiar filtros</button>
+    </form>
+  </div>
+
+  <!-- Listado de productos/juegos -->
+  <div class="products-list-section" *ngIf="!isLoading && !error">
+    <div *ngIf="products.length === 0">
+      <p>No hay productos para mostrar.</p>
+    </div>
+    <div class="products-grid">
+      <div *ngFor="let product of products" class="product-card">
+        <div class="product-image">
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
+        </div>
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.description }}</p>
+          <p>Precio: {{ product.price | currency:'COP':'symbol':'1.0-0' }}</p>
+          <p>Stock: {{ product.stock }}</p>
+            <div class="game-actions">
+              <button 
+                class="btn btn-primary buy-btn" 
+                [disabled]="product.stock === 0"
+                (click)="buyProduct(product)">
+                {{ product.stock > 0 ? '🛒 Comprar' : 'Sin stock' }}
+              </button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
