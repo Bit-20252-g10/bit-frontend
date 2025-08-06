@@ -323,12 +323,12 @@ export class Dashboard implements OnInit {
 
   loadConsoles() {
     // Temporalmente deshabilitado hasta que el backend implemente las rutas
-    console.log('Carga de consolas deshabilitada - rutas no implementadas en el backend');
+    console.log('Carga de consolas deshabilitada - rutas no implementadas en el backend dashboard linea 326');
   }
 
   loadAccessories() {
     // Temporalmente deshabilitado hasta que el backend implemente las rutas
-    console.log('Carga de accesorios deshabilitada - rutas no implementadas en el backend');
+    console.log('Carga de accesorios deshabilitada - rutas no implementadas en el backend dashboard linea 331');
   }
 
   onConsoleImageSelected(event: any) {

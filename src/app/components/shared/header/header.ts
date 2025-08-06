@@ -3,14 +3,15 @@ import { RouterModule } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { CartService } from '../../../services/cart.service';
 import { Subscription } from 'rxjs';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, NgIf],
+  imports: [RouterModule, CommonModule],
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
+
 export class HeaderComponent implements OnInit, OnDestroy {
   cartItemCount = 0;
   private cartSubscription: Subscription = new Subscription();

@@ -50,7 +50,6 @@
               (click)="filterByConsole(console)"
               [class.active]="selectedConsole === console"
               class="filter-btn"
-              [style.background-color]="selectedConsole === console ? getConsoleColor(console) : 'transparent'"
               [style.color]="selectedConsole === console ? 'white' : 'var(--text-primary)'"
             >
               {{ console }}
@@ -66,9 +65,7 @@
               *ngFor="let genre of genres" 
               (click)="filterByGenre(genre)"
               [class.active]="selectedGenre === genre"
-              class="filter-btn"
-              [style.background-color]="selectedGenre === genre ? getGenreColor(genre) : 'transparent'"
-              [style.color]="selectedGenre === genre ? 'white' : 'var(--text-primary)'"
+              class="filter-btn getGenreColor"
             >
               {{ genre }}
             </button>
@@ -143,11 +140,8 @@
             <h3 class="game-title">{{ game.name }}</h3>
             
             <div class="game-badges">
-              <span class="badge genre-badge" [style.background-color]="getGenreColor(game.genero)">
-                {{ game.genero }}
-              </span>
               <span *ngIf="game.multiplayer" class="badge multiplayer-badge">
-                🎯 Multiplayer
+                 Multiplayer
               </span>
             </div>
             
@@ -163,7 +157,7 @@
               <div class="game-price-stock">
                 <span class="price">{{ game.precio | currency:'COP':'symbol':'1.0-0' }}</span>
                 <span class="stock" [class.in-stock]="game.stock > 0" [class.out-of-stock]="game.stock === 0">
-                  {{ game.stock > 0 ? '📦 En stock' : '❌ Sin stock' }}
+                  {{ game.stock > 0 ? ' En stock' : ' Sin stock' }}
                 </span>
               </div>
             </div>
@@ -196,8 +190,7 @@
         <div class="game-content">
           <h3 class="game-title">{{ game.name }}</h3>
           <div class="game-badges">
-            <span class="badge genre-badge" [style.background-color]="getGenreColor(game.genero)">{{ game.genero }}</span>
-            <span *ngIf="game.multiplayer" class="badge multiplayer-badge">🎯 Multiplayer</span>
+            <span *ngIf="game.multiplayer" class="badge multiplayer-badge">Multiplayer</span>
           </div>
           <p class="game-description">{{ game.descripcion }}</p>
           <div class="game-meta">
@@ -237,7 +230,6 @@
         <div class="game-content">
           <h3 class="game-title">{{ game.name }}</h3>
           <div class="game-badges">
-            <span class="badge genre-badge" [style.background-color]="getGenreColor(game.genero)">{{ game.genero }}</span>
             <span *ngIf="game.multiplayer" class="badge multiplayer-badge">🎯 Multiplayer</span>
           </div>
           <p class="game-description">{{ game.descripcion }}</p>
@@ -278,7 +270,6 @@
         <div class="game-content">
           <h3 class="game-title">{{ game.name }}</h3>
           <div class="game-badges">
-            <span class="badge genre-badge" [style.background-color]="getGenreColor(game.genero)">{{ game.genero }}</span>
             <span *ngIf="game.multiplayer" class="badge multiplayer-badge">🎯 Multiplayer</span>
           </div>
           <p class="game-description">{{ game.descripcion }}</p>

@@ -81,11 +81,11 @@ export class Productos implements OnInit {
     // Cargar juegos
     this.gamesService.getAllGames().subscribe({
       next: (response) => {
-        if (response.allOK) {
+        if (response && response.allOK) {
           this.allGames = response.data;
           this.convertGamesToProducts();
         } else {
-          this.error = response.message || 'Error al cargar los juegos';
+          this.error = response ? response.message : 'Error al cargar los juegos: respuesta inválida';
         }
       },
       error: (err) => {
@@ -94,14 +94,15 @@ export class Productos implements OnInit {
       }
     });
 
-    // Cargar productos
+   
     this.productService.getAllProducts().subscribe({
       next: (response) => {
-        if (response.allOK) {
+        console.log('Respuesta de getAllProducts:', response); // <-- agrega esto
+        if (response && response.allOK) {
           this.allProducts = response.data;
           this.convertProductsToProducts();
         } else {
-          console.error('Error loading products:', response.message);
+          console.error('Error loading products:', response ? response.message : 'Respuesta inválida');
         }
         this.isLoading = false;
         this.applyFilters();
@@ -117,34 +118,33 @@ export class Productos implements OnInit {
   }
 
   loadGamesByConsole() {
-    this.gamesService.getPlaystationGames().subscribe({
-      next: (response) => {
-        if (response.allOK) {
-          this.playstationGames = response.data;
-        }
-      },
-      error: (err) => console.error('Error loading PlayStation games:', err)
-    });
+  this.gamesService.getPlaystationGames().subscribe({
+    next: (response) => {
+      if (response && response.allOK) {
+        this.playstationGames = response.data;
+      }
+    },
+    error: (err) => console.error('Error loading PlayStation games:', err)
+  });
 
-    this.gamesService.getXboxGames().subscribe({
-      next: (response) => {
-        if (response.allOK) {
-          this.xboxGames = response.data;
-        }
-      },
-      error: (err) => console.error('Error loading Xbox games:', err)
-    });
+  this.gamesService.getXboxGames().subscribe({
+    next: (response) => {
+      if (response && response.allOK) {
+        this.xboxGames = response.data;
+      }
+    },
+    error: (err) => console.error('Error loading Xbox games:', err)
+  });
 
-    this.gamesService.getNintendoGames().subscribe({
-      next: (response) => {
-        if (response.allOK) {
-          this.nintendoGames = response.data;
-        }
-      },
-      error: (err) => console.error('Error loading Nintendo games:', err)
-    });
-  }
-
+  this.gamesService.getNintendoGames().subscribe({
+    next: (response) => {
+      if (response && response.allOK) {
+        this.nintendoGames = response.data;
+      }
+    },
+    error: (err) => console.error('Error loading Nintendo games:', err)
+  });
+}
   convertGamesToProducts() {
     this.products = this.allGames.map(game => ({
       id: game._id,
@@ -402,7 +402,7 @@ export class Productos implements OnInit {
       id: product.id,
       name: product.name,
       price: product.price,
-      type: product.type, // Now supports 'juego', 'consola', 'accesorio'
+      type: product.type,
       imageUrl: product.imageUrl,
       brand: product.brand
     });
@@ -412,27 +412,6 @@ export class Productos implements OnInit {
   private showSuccessMessage(message: string) {
     const notification = document.createElement('div');
     notification.className = 'success-notification';
-    notification.innerHTML = `
-      <div class="notification-content">
-        <span class="notification-icon">✅</span>
-        <span class="notification-text">${message}</span>
-      </div>
-    `;
-    
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #28a745;
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 10000;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      max-width: 300px;
-    `;
     
     document.body.appendChild(notification);
     
@@ -495,5 +474,4 @@ export class Productos implements OnInit {
         brand: game.publisher
       });
     }
-}
-}
+}}

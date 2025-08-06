@@ -185,13 +185,8 @@ export class Juegos implements OnInit {
     // Crear elemento de notificación
     const notification = document.createElement('div');
     notification.className = 'success-notification';
-    notification.innerHTML = `
-      <div class="notification-content">
-        <span class="notification-icon">✅</span>
-        <span class="notification-text">${message}</span>
-      </div>
-    `;
-    
+    notification.textContent = message;
+
     // Agregar al DOM
     document.body.appendChild(notification);
     
@@ -213,32 +208,6 @@ export class Juegos implements OnInit {
   applyFilters() {
     this.loadGames();
   }
-
-  // Obtener el color de la consola para el badge
-  getConsoleColor(console: string): string {
-    const colors: { [key: string]: string } = {
-      'PlayStation': '#003791',
-      'Xbox': '#107C10',
-      'Nintendo': '#E60012'
-    };
-    return colors[console] || '#6C757D';
   }
 
-  // Obtener el color del género
-  getGenreColor(genre: string): string {
-    const colors: { [key: string]: string } = {
-      'Acción': '#DC3545',
-      'Aventura': '#28A745',
-      'RPG': '#6F42C1',
-      'Estrategia': '#FD7E14',
-      'Deportes': '#20C997',
-      'Carreras': '#FFC107',
-      'Shooter': '#E83E8C',
-      'Plataformas': '#17A2B8',
-      'Puzzle': '#6C757D',
-      'Otros': '#495057'
-    };
-    return colors[genre] || '#6C757D';
-  }
 
-}

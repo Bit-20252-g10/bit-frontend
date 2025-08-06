@@ -29,6 +29,12 @@
   font-weight: 700;
 }
 
+.getGenreColor{
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 4px 8px; 
+}
+
 .games-subtitle {
   font-size: 1.2rem;
   color: var(--text-secondary);
@@ -446,9 +452,6 @@
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
