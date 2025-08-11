@@ -38,62 +38,62 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
+
   getAllProducts(): Observable<ApiResponse<ProductModel[]>> {
-    return this.http.get<ApiResponse<ProductModel[]>>(this.apiUrl);
+    return this.http.get<ApiResponse<ProductModel[]>>(`${this.apiUrl}/products`);
   }
 
   getProductById(id: string): Observable<ApiResponse<ProductModel>> {
-    return this.http.get<ApiResponse<ProductModel>>(`${this.apiUrl}/${id}`);
+    return this.http.get<ApiResponse<ProductModel>>(`${this.apiUrl}/products/${id}`);
   }
 
   createProduct(product: Omit<ProductModel, '_id' | 'createdAt' | 'updatedAt'>): Observable<ApiResponse<ProductModel>> {
-    return this.http.post<ApiResponse<ProductModel>>(this.apiUrl, product);
+    return this.http.post<ApiResponse<ProductModel>>(`${this.apiUrl}/products`, product);
   }
 
   updateProduct(id: string, product: Partial<ProductModel>): Observable<ApiResponse<ProductModel>> {
-    return this.http.put<ApiResponse<ProductModel>>(`${this.apiUrl}/${id}`, product);
+    return this.http.put<ApiResponse<ProductModel>>(`${this.apiUrl}/products/${id}`, product);
   }
 
   deleteProduct(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/products/${id}`);
   }
 
   getConsoles(): Observable<ApiResponse<ProductModel[]>> {
-    return this.http.get<ApiResponse<ProductModel[]>>(`${this.apiUrl}?category=console`);
+    return this.http.get<ApiResponse<ProductModel[]>>(`${this.apiUrl}/products?category=console`);
   }
 
   getAccessories(): Observable<ApiResponse<ProductModel[]>> {
-    return this.http.get<ApiResponse<ProductModel[]>>(`${this.apiUrl}?category=accessory`);
+    return this.http.get<ApiResponse<ProductModel[]>>(`${this.apiUrl}/products?category=accessory`);
   }
 
   createConsole(console: Partial<ProductModel>): Observable<ApiResponse<ProductModel>> {
-    return this.http.post<ApiResponse<ProductModel>>(this.apiUrl, console);
+    return this.http.post<ApiResponse<ProductModel>>(`${this.apiUrl}/products`, console);
   }
 
   createAccessory(accessory: Partial<ProductModel>): Observable<ApiResponse<ProductModel>> {
-    return this.http.post<ApiResponse<ProductModel>>(this.apiUrl, accessory);
+    return this.http.post<ApiResponse<ProductModel>>(`${this.apiUrl}/products`, accessory);
   }
 
   deleteConsole(id: string) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/products/${id}`);
   }
 
   deleteAccessory(id: string) {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/products/${id}`);
   }
 
-  // Subir imagen general
+
   uploadImage(file: File): Observable<UploadResponse> {
     const formData = new FormData();
     formData.append('image', file);
     return this.http.post<UploadResponse>(`${this.uploadUrl}`, formData);
   }
 
-  // Subir imagen específica para producto
   uploadProductImage(file: File, productId: string): Observable<UploadResponse> {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('productId', productId);
     return this.http.post<UploadResponse>(`${this.uploadUrl}/product`, formData);
   }
-} 
+}

@@ -1,0 +1,78 @@
+<div class="cart-overlay" [class.visible]="isVisible" (click)="closeCart()">
+  <div class="cart-modal" (click)="$event.stopPropagation()">
+    <div class="cart-header">
+      <h2>🛒 Compras</h2>
+      <button class="close-btn" (click)="closeCart()">×</button>
+    </div>
+
+    <div class="cart-content">
+      <div *ngIf="cartItems.length === 0" class="empty-cart">
+        <div class="empty-icon"><i class="bi bi-cart4"></i></div>
+        <h3>Tu compra está vacía</h3>
+        <p>Agrega algunos productos para comenzar a comprar</p>
+      </div>
+
+      <div *ngIf="cartItems.length > 0" class="cart-items">
+        <div *ngFor="let item of cartItems" class="cart-item">
+          <div class="item-image">
+            <div class="placeholder-image">
+              <span class="placeholder-icon">🎮</span>
+            </div>
+          </div>
+
+          <div class="item-details">
+            <h4 class="item-name">{{ item.name }}</h4>
+            <p class="item-brand" *ngIf="item.brand">{{ item.brand }}</p>
+            <span class="item-type">{{ getTypeLabel(item.type) }}</span>
+          </div>
+
+          <div class="item-quantity">
+            <button
+              class="qty-btn"
+              (click)="updateQuantity(item.id, item.quantity - 1)"
+            >
+              −
+            </button>
+            <span class="qty-value">{{ item.quantity }}</span>
+            <button
+              class="qty-btn"
+              (click)="updateQuantity(item.id, item.quantity + 1)"
+            >
+              +
+            </button>
+          </div>
+
+          <div class="item-price">
+            <span class="price"
+              >{{ item.price * item.quantity | currency:'COP':'symbol':'1.0-0'
+              }}</span
+            >
+            <span class="unit-price"
+              >{{ item.price | currency:'COP':'symbol':'1.0-0' }} c/u</span
+            >
+          </div>
+
+          <button class="remove-btn" (click)="removeItem(item.id)">🗑️</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="cartItems.length > 0" class="cart-footer">
+      <div class="cart-total">
+        <span class="total-label">Total:</span>
+        <span class="total-amount"
+          >{{ getCartTotal() | currency:'COP':'symbol':'1.0-0' }}</span
+        >
+      </div>
+
+      <div class="cart-actions">
+        <button class="btn btn-secondary" (click)="openClearCartModal()">
+          Limpiar Compras
+        </button>
+        <button class="btn btn-primary" (click)="checkout()">
+          Finalizar Compra
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

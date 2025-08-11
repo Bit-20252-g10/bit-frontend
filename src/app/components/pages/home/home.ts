@@ -5,6 +5,7 @@ import { HomeService, HomeData, Category, Feature } from '../../../services/home
 
 @Component({
   selector: 'app-home',
+  standalone: true,
   imports: [RouterModule, CommonModule],
   templateUrl: './home.html',
   styleUrls: ['./home.css']
@@ -16,8 +17,6 @@ export class Home implements OnInit {
   featuredGames: any[] = [];
   isLoading = true;
   error: string | null = null;
-
- 
 
   constructor(private homeService: HomeService) {}
 

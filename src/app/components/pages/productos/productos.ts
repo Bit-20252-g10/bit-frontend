@@ -94,10 +94,10 @@ export class Productos implements OnInit {
       }
     });
 
-   
+    // Cargar productos
     this.productService.getAllProducts().subscribe({
       next: (response) => {
-        console.log('Respuesta de getAllProducts:', response); // <-- agrega esto
+        console.log('Respuesta de getAllProducts:', response);
         if (response && response.allOK) {
           this.allProducts = response.data;
           this.convertProductsToProducts();
@@ -184,7 +184,7 @@ export class Productos implements OnInit {
     if (cat.includes('playstation') || cat.includes('xbox') || cat.includes('nintendo') || cat.includes('consola') || cat.includes('consolas') || cat.includes('console')) return 'consola';
     if (cat.includes('accesorio') || cat.includes('accesorios') || cat.includes('accessory')) return 'accesorio';
     if (cat.includes('juego') || cat.includes('juegos') || cat.includes('game')) return 'juego';
-    return 'accesorio'; // Por defecto
+    return 'accesorio'; 
   }
 
   getCurrentGames(): Game[] {
@@ -226,19 +226,18 @@ export class Productos implements OnInit {
     }
   }
 
-  getConsoleColor(console: string): string {
-    switch (console) {
-      case 'playstation':
-        return '#006FCD';
-      case 'xbox':
-        return '#107C10';
-      case 'nintendo':
-        return '#E60012';
-      default:
-        return '#6c757d';
-    }
-  }
-
+  //getConsoleColor(console: string): string {
+    //switch (console) {
+      //case 'playstation':
+        //return '#006FCD';
+      //case 'xbox':
+        //return '#107C10';
+      //case 'nintendo':
+        //return '#E60012';
+      //default:
+        //return '#6c757d';
+    //}
+  
   updatePagination() {
     this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
     this.currentPage = Math.min(this.currentPage, this.totalPages);
@@ -344,7 +343,6 @@ export class Productos implements OnInit {
   }
 
   setActiveTab(tab: 'todos' | 'playstation' | 'xbox' | 'nintendo') {
-    this.activeTab = tab;
     this.currentPage = 1;
     this.applyFilters();
   }
@@ -357,37 +355,35 @@ export class Productos implements OnInit {
     if (this.activeSection === 'juegos') {
       return this.products.filter(p => p.type === 'juego');
     } else if (this.activeSection === 'consolas') {
-      // Aquí puedes filtrar por tipo consola si tienes esa info
       return this.products.filter(p => p.category === 'Consolas');
     } else if (this.activeSection === 'accesorios') {
-      // Aquí puedes filtrar por tipo accesorio si tienes esa info
       return this.products.filter(p => p.category === 'Accesorios');
     }
     return this.products;
   }
 
-  getCategoryColor(category: string): string {
-    const colors: { [key: string]: string } = {
-      'Acción': '#ff6b35',
-      'Aventura': '#4ecdc4',
-      'RPG': '#45b7d1',
-      'Deportes': '#3498db',
-      'Estrategia': '#9b59b6',
-      'Simulación': '#e74c3c',
-      'Consolas': '#007bff',
-      'Accesorios': '#6c757d'
-    };
-    return colors[category] || '#6c757d';
-  }
+  //getCategoryColor(category: string): string {
+    //const colors: { [key: string]: string } = {
+      //'Acción': '#ff6b35',
+      //'Aventura': '#4ecdc4',
+      //'RPG': '#45b7d1',
+      //'Deportes': '#3498db',
+      //'Estrategia': '#9b59b6',
+      //'Simulación': '#e74c3c',
+      //'Consolas': '#007bff',
+      //'Accesorios': '#6c757d'
+   // };
+    //return colors[category] || '#6c757d';
+ // }
 
-  getTypeColor(type: string): string {
-    const colors: { [key: string]: string } = {
-      'juego': '#28a745',
-      'consola': '#007bff',
-      'accesorio': '#6c757d'
-    };
-    return colors[type] || '#6c757d';
-  }
+  //getTypeColor(type: string): string {
+    //const colors: { [key: string]: string } = {
+      //'juego': '#28a745',
+      //'consola': '#007bff',
+      //'accesorio': '#6c757d'
+    //};
+    //return colors[type] || '#6c757d';
+  //}
 
   toggleProductDetails(productId: string) {
     this.expandedProductId = this.expandedProductId === productId ? null : productId;
@@ -412,6 +408,7 @@ export class Productos implements OnInit {
   private showSuccessMessage(message: string) {
     const notification = document.createElement('div');
     notification.className = 'success-notification';
+    
     
     document.body.appendChild(notification);
     
