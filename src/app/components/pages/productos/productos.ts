@@ -20,6 +20,7 @@ interface Product {
 
 @Component({
   selector: 'app-productos',
+  standalone: true,
   imports: [RouterModule, CurrencyPipe, NgIf, NgFor, FormsModule],
   templateUrl: './productos.html',
   styleUrls: ['./productos.css']
@@ -118,33 +119,34 @@ export class Productos implements OnInit {
   }
 
   loadGamesByConsole() {
-  this.gamesService.getPlaystationGames().subscribe({
-    next: (response) => {
-      if (response && response.allOK) {
-        this.playstationGames = response.data;
-      }
-    },
-    error: (err) => console.error('Error loading PlayStation games:', err)
-  });
+    this.gamesService.getPlaystationGames().subscribe({
+      next: (response) => {
+        if (response && response.allOK) {
+          this.playstationGames = response.data;
+        }
+      },
+      error: (err) => console.error('Error loading PlayStation games:', err)
+    });
 
-  this.gamesService.getXboxGames().subscribe({
-    next: (response) => {
-      if (response && response.allOK) {
-        this.xboxGames = response.data;
-      }
-    },
-    error: (err) => console.error('Error loading Xbox games:', err)
-  });
+    this.gamesService.getXboxGames().subscribe({
+      next: (response) => {
+        if (response && response.allOK) {
+          this.xboxGames = response.data;
+        }
+      },
+      error: (err) => console.error('Error loading Xbox games:', err)
+    });
 
-  this.gamesService.getNintendoGames().subscribe({
-    next: (response) => {
-      if (response && response.allOK) {
-        this.nintendoGames = response.data;
-      }
-    },
-    error: (err) => console.error('Error loading Nintendo games:', err)
-  });
-}
+    this.gamesService.getNintendoGames().subscribe({
+      next: (response) => {
+        if (response && response.allOK) {
+          this.nintendoGames = response.data;
+        }
+      },
+      error: (err) => console.error('Error loading Nintendo games:', err)
+    });
+  }
+  
   convertGamesToProducts() {
     this.products = this.allGames.map(game => ({
       id: game._id,
@@ -184,7 +186,7 @@ export class Productos implements OnInit {
     if (cat.includes('playstation') || cat.includes('xbox') || cat.includes('nintendo') || cat.includes('consola') || cat.includes('consolas') || cat.includes('console')) return 'consola';
     if (cat.includes('accesorio') || cat.includes('accesorios') || cat.includes('accessory')) return 'accesorio';
     if (cat.includes('juego') || cat.includes('juegos') || cat.includes('game')) return 'juego';
-    return 'accesorio'; 
+    return 'accesorio';
   }
 
   getCurrentGames(): Game[] {
@@ -207,7 +209,7 @@ export class Productos implements OnInit {
       case 'xbox':
         return '🎮';
       case 'nintendo':
-        return '🎮';
+        return '�';
       default:
         return '🎯';
     }
@@ -226,18 +228,6 @@ export class Productos implements OnInit {
     }
   }
 
-  //getConsoleColor(console: string): string {
-    //switch (console) {
-      //case 'playstation':
-        //return '#006FCD';
-      //case 'xbox':
-        //return '#107C10';
-      //case 'nintendo':
-        //return '#E60012';
-      //default:
-        //return '#6c757d';
-    //}
-  
   updatePagination() {
     this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
     this.currentPage = Math.min(this.currentPage, this.totalPages);
@@ -362,29 +352,6 @@ export class Productos implements OnInit {
     return this.products;
   }
 
-  //getCategoryColor(category: string): string {
-    //const colors: { [key: string]: string } = {
-      //'Acción': '#ff6b35',
-      //'Aventura': '#4ecdc4',
-      //'RPG': '#45b7d1',
-      //'Deportes': '#3498db',
-      //'Estrategia': '#9b59b6',
-      //'Simulación': '#e74c3c',
-      //'Consolas': '#007bff',
-      //'Accesorios': '#6c757d'
-   // };
-    //return colors[category] || '#6c757d';
- // }
-
-  //getTypeColor(type: string): string {
-    //const colors: { [key: string]: string } = {
-      //'juego': '#28a745',
-      //'consola': '#007bff',
-      //'accesorio': '#6c757d'
-    //};
-    //return colors[type] || '#6c757d';
-  //}
-
   toggleProductDetails(productId: string) {
     this.expandedProductId = this.expandedProductId === productId ? null : productId;
   }
@@ -402,13 +369,14 @@ export class Productos implements OnInit {
       imageUrl: product.imageUrl,
       brand: product.brand
     });
+    this.cartService.showCart(); // Línea agregada
     this.showSuccessMessage('Producto añadido al carrito');
   }
 
   private showSuccessMessage(message: string) {
     const notification = document.createElement('div');
     notification.className = 'success-notification';
-    
+    notification.textContent = message; // Se agregó el mensaje al div
     
     document.body.appendChild(notification);
     
@@ -459,9 +427,10 @@ export class Productos implements OnInit {
       platform: 'Información no disponible'
     };
   }
-    buyGame(game: Game) {
+
+  buyGame(game: Game) {
     if (game.stock > 0) {
-      // Agregar al carrito
+
       this.cartService.addToCart({
         id: game._id,
         name: game.name,
@@ -470,5 +439,6 @@ export class Productos implements OnInit {
         imageUrl: game.imageUrl,
         brand: game.publisher
       });
+      this.cartService.showCart();
     }
-}}
+  }}
