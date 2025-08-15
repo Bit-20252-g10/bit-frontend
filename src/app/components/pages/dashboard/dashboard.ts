@@ -9,13 +9,12 @@ import {
   ProductModel,
 } from '../../../services/product.service';
 import { InventoryService, InventoryItem } from '../../../services/service/inventory.service';
-import { of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule, CommonModule, CurrencyPipe],
+  imports: [FormsModule, CommonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -594,5 +593,71 @@ export class Dashboard implements OnInit {
     alert(
       'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
     );
+  }
+
+  // Variables para edición
+  editProductIndex: number | null = null;
+  editedProduct: Partial<InventoryItem> = {};
+
+  startEditProduct(index: number, product: InventoryItem) {
+    this.editProductIndex = index;
+    this.editedProduct = { ...product };
+  }
+
+  cancelEditProduct() {
+    this.editProductIndex = null;
+    this.editedProduct = {};
+  }
+
+  saveEditProduct(product: InventoryItem, index: number) {
+    if (this.editedProduct.price == null || this.editedProduct.stock == null || !this.editedProduct.name) {
+      this.error = 'Nombre, precio y stock son obligatorios';
+      return;
+    }
+
+    this.inventoryService.updateItem(product._id, this.editedProduct).subscribe({
+      next: (response) => {
+        if (response.allOK) {
+          if (product.type === 'games') {
+            this.games[index] = { ...this.games[index], ...this.editedProduct } as Game;
+          } else if (product.type === 'consoles') {
+            this.consoles[index] = { ...this.consoles[index], ...this.editedProduct } as ProductModel;
+          } else if (product.type === 'accessories') {
+            this.accessories[index] = { ...this.accessories[index], ...this.editedProduct } as ProductModel;
+          }
+
+          this.successMessage = 'Producto actualizado correctamente';
+          this.cancelEditProduct();
+          setTimeout(() => this.successMessage = null, 3000);
+        } else {
+          this.error = response.message;
+        }
+      },
+      error: () => {
+        this.error = 'Error al actualizar el producto.';
+      }
+    });
+  }
+
+  deleteProduct(product: InventoryItem, index: number) {
+    if (!confirm(`¿Seguro que quieres eliminar "${product.name}"?`)) return;
+
+    this.inventoryService.deleteItem(product._id).subscribe({
+      next: (response) => {
+        if (response.allOK) {
+          if (product.type === 'games') this.games.splice(index, 1);
+          else if (product.type === 'consoles') this.consoles.splice(index, 1);
+          else if (product.type === 'accessories') this.accessories.splice(index, 1);
+
+          this.successMessage = 'Producto eliminado correctamente';
+          setTimeout(() => this.successMessage = null, 3000);
+        } else {
+          this.error = response.message;
+        }
+      },
+      error: () => {
+        this.error = 'Error al eliminar el producto.';
+      }
+    });
   }
 }
