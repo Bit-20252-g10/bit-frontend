@@ -5,7 +5,10 @@
     <p>Cargando...</p>
   </div>
 
-  
+  <div *ngIf="!isLoading && !error">
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1>{{ homeData?.hero?.heroTitle || 'Bienvenido a Princegaming' }}</h1>
   <div *ngIf="error && !isLoading" class="error-container">
     <p>{{ error }}</p>
     <button (click)="loadHomeData()" class="btn btn-primary">Reintentar</button>
@@ -20,8 +23,6 @@
       </div>
     </section>
 
-  
-      <section *ngIf="featuredGames.length > 0" class="featured-games-section">
       <div class="container">
         <h2>¿Quieres cambiar tu consola? Nosotros te la recibimos como parte de pago.</h2>
         <div class="gif-container">
@@ -30,8 +31,6 @@
         
 
       </div>
-    </section>
-
    
 
     <section class="features-section">

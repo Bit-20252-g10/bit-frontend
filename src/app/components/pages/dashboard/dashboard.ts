@@ -3,16 +3,19 @@ import { Router } from '@angular/router';
 import { GamesService, Game } from '../../../services/games.service';
 import { UploadService } from '../../../services/upload.service';
 import { FormsModule } from '@angular/forms';
-import { CurrencyPipe, CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import {
   ProductService,
   ProductModel,
 } from '../../../services/product.service';
+import { InventoryService, InventoryItem } from '../../../services/service/inventory.service';
+import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe, CommonModule],
+  imports: [FormsModule, CommonModule, CurrencyPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -37,7 +40,7 @@ export class Dashboard implements OnInit {
     imageUrl: '',
   };
   selectedFile: File | null = null;
-
+  
   isUploading = false;
   consoles: ProductModel[] = [];
   accessories: ProductModel[] = [];
@@ -87,7 +90,9 @@ export class Dashboard implements OnInit {
     private gamesService: GamesService,
     private productService: ProductService,
     private uploadService: UploadService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient,
+    private inventoryService: InventoryService
   ) {}
 
   ngOnInit() {
@@ -183,12 +188,10 @@ export class Dashboard implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      // Validar tipo de archivo
       if (!file.type.startsWith('image/')) {
         this.error = 'Por favor selecciona un archivo de imagen válido.';
         return;
       }
-      // Validar tamaño de archivo (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
         this.error = 'El archivo es demasiado grande. Máximo 5MB.';
         return;
@@ -209,16 +212,7 @@ export class Dashboard implements OnInit {
       this.uploadService.uploadImage(this.selectedFile).subscribe({
         next: (response) => {
           this.isUploading = false;
-          console.log('Respuesta completa de subida de imagen:', response);
-          console.log('Estructura de response.data:', response.data);
-          console.log('Tipo de response.data:', typeof response.data);
-          console.log(
-            'Claves de response.data:',
-            Object.keys(response.data || {})
-          );
-
           if (response.allOK) {
-            // Intentar diferentes propiedades donde podría estar la URL
             let imageUrl =
               response.data?.imageUrl ||
               response.data?.url ||
@@ -226,20 +220,9 @@ export class Dashboard implements OnInit {
               response.data?.path ||
               response.data;
 
-            console.log('URL de imagen extraída:', imageUrl);
-            console.log('Tipo de imageUrl:', typeof imageUrl);
-
             if (imageUrl && typeof imageUrl === 'string') {
               resolve(imageUrl);
             } else {
-              console.error(
-                'No se pudo extraer la URL de la imagen de la respuesta:',
-                response
-              );
-              console.error(
-                'response.data completo:',
-                JSON.stringify(response.data, null, 2)
-              );
               reject('No se pudo obtener la URL de la imagen');
             }
           } else {
@@ -256,57 +239,58 @@ export class Dashboard implements OnInit {
   }
 
   async addGame() {
-    if (
-      !this.newGame.name ||
-      !this.newGame.consola ||
-      !this.newGame.genero ||
-      !this.newGame.descripcion ||
-      this.newGame.precio === undefined
-    ) {
-      this.error =
-        'Todos los campos son requeridos: nombre, consola, género, descripción y precio';
+    if (!this.newGame.name || !this.newGame.precio || this.newGame.stock == null) {
+      this.error = 'Faltan campos obligatorios: nombre, precio y stock';
+      console.error('Faltan campos obligatorios');
       return;
     }
+
     try {
       let imageUrl = '';
       if (this.selectedFile) {
         console.log('Subiendo imagen...');
         imageUrl = await this.uploadImage();
-        console.log('URL de imagen obtenida:', imageUrl);
       }
-      const gameData = {
-        ...this.newGame,
-        imageUrl,
-      } as Omit<Game, '_id' | 'createdAt' | 'updatedAt'>;
 
-      console.log('Datos del juego a enviar:', gameData);
 
-      this.gamesService.createGame(gameData).subscribe({
-        next: (response) => {
-          console.log('Respuesta del servidor:', response);
+      const productData: Partial<InventoryItem> = {
+        name: this.newGame.name || '',
+        type: 'games' as const,
+        description: this.newGame.descripcion || "",
+        price: this.newGame.precio || 0,
+        stock: this.newGame.stock || 0,
+        imageUrl: imageUrl || "https://placehold.co/400x300/e9ecef/212529?text=Sin+Imagen",
+        consola: this.newGame.consola || "",
+        genero: this.newGame.genero || "",
+        developer: this.newGame.developer || "",
+        publisher: this.newGame.publisher || "",
+        releaseYear: this.newGame.releaseYear || undefined,
+        rating: this.newGame.rating || 'E',
+        multiplayer: this.newGame.multiplayer || false
+      };
+
+      console.log('Datos del producto a enviar:', productData);
+
+      this.inventoryService.createItem(productData).subscribe({
+        next: (response: any) => {
+          console.log('Producto agregado correctamente:', response);
           if (response.allOK) {
-            // Asegurar que la imagen se incluya en el objeto del juego
-            const newGame = {
-              ...response.data,
-              imageUrl: response.data.imageUrl || imageUrl,
-            };
-            this.games.push(newGame);
+            this.successMessage = 'Producto agregado exitosamente';
+            this.loadGames(); // refrescar lista
             this.showAddForm = false;
-            this.resetForm();
-            this.error = null;
-            this.successMessage = 'Juego agregado exitosamente';
+            this.resetForm(); // limpiar formulario
             setTimeout(() => (this.successMessage = null), 2500);
           } else {
             this.error = response.message;
           }
         },
-        error: (err) => {
-          this.error = 'Error al agregar el juego.';
-          console.error('Error:', err);
+        error: (err: any) => {
+          console.error('Error al agregar producto:', err);
+          this.error = 'No se pudo agregar el producto';
         },
       });
-    } catch (error) {
-      this.error = error as string;
+    } catch (error: any) {
+      this.error = error.message || error;
       console.error('Error en addGame:', error);
     }
   }
@@ -388,10 +372,9 @@ export class Dashboard implements OnInit {
       },
     });
   }
+
   loadAccessories() {
     this.isLoading = true;
-
-
     this.productService.getAccessories().subscribe({
       next: (response) => {
         if (response.allOK) {
@@ -399,17 +382,15 @@ export class Dashboard implements OnInit {
         } else {
           this.error = response.message;
         }
-
         this.isLoading = false;
       },
-
       error: (err) => {
         this.error = 'Error al cargar los accesorios.';
-
         this.isLoading = false;
       },
     });
   }
+
   onConsoleImageSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) {
@@ -440,13 +421,13 @@ export class Dashboard implements OnInit {
 
   async addConsole() {
     alert(
-      'Funcionalidad de consolas temporalmente deshabilitada - rutas no implementadas en el backend'
+      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
     );
   }
 
   async addAccessory() {
     alert(
-      'Funcionalidad de accesorios temporalmente deshabilitada - rutas no implementadas en el backend'
+      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
     );
   }
 
@@ -567,7 +548,7 @@ export class Dashboard implements OnInit {
 
   deleteConsole(consoleItem: ProductModel, index: number) {
     alert(
-      'Funcionalidad de consolas temporalmente deshabilitada - rutas no implementadas en el backend'
+      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
     );
   }
 
@@ -611,7 +592,7 @@ export class Dashboard implements OnInit {
 
   deleteAccessory(accessoryItem: ProductModel, index: number) {
     alert(
-      'Funcionalidad de accesorios temporalmente deshabilitada - rutas no implementadas en el backend'
+      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
     );
   }
 }

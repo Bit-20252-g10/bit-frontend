@@ -25,7 +25,7 @@ export interface Game {
   providedIn: 'root'
 })
 export class GamesService {
-  private apiUrl = 'http://localhost:4000/games';
+  private apiUrl = 'http://localhost:4000/inventory';
 
   constructor(private http: HttpClient) {}
 
