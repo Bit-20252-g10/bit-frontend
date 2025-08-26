@@ -140,20 +140,7 @@
 /* =====================
    Filtros
    ===================== */
-.filters-section {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  margin: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
-  box-shadow: 0 4px 15px var(--shadow-dark);
-}
-.filters-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xl);
-}
+
 .filters-header h3 {
   color: var(--text-primary);
   font-size: var(--font-size-2xl);
@@ -233,17 +220,7 @@
   accent-color: var(--primary-blue);
 }
 
-/* =====================
-   Filtros visuales
-   ===================== */
-.filters-section {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  margin: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
-  box-shadow: 0 4px 15px var(--shadow-dark);
-}
+ visuales/*Filtros*/
 .filters-form {
   display: flex;
   flex-wrap: wrap;

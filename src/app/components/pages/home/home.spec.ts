@@ -1,17 +1,40 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Home } from './home';
+import { HomeService } from '../../../services/home.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
 
 describe('Home', () => {
   let component: Home;
   let fixture: ComponentFixture<Home>;
+  let homeServiceMock: jasmine.SpyObj<HomeService>;
 
   beforeEach(async () => {
+    homeServiceMock = jasmine.createSpyObj('HomeService', ['getHomeData']);
+    homeServiceMock.getHomeData.and.returnValue(of({ 
+      allOK: true, 
+      message: 'Success', 
+      data: { 
+        hero: {
+          heroTitle: 'Welcome to Our Platform',
+          heroSubtitle: 'Discover amazing games and features',
+          heroButtonText: 'Get Started',
+          heroButtonRoute: '/games',
+          heroBackgroundImage: 'banner.jpg'
+        },
+        categories: [],
+        features: [],
+        featuredGames: [],
+        stats: {
+          totalGames: 0
+        }
+      } 
+    }));
+
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        RouterTestingModule
+      imports: [HttpClientTestingModule],
+      providers: [
+        { provide: HomeService, useValue: homeServiceMock }
       ]
     }).compileComponents();
 
@@ -22,5 +45,9 @@ describe('Home', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should load home data on init', () => {
+    expect(homeServiceMock.getHomeData).toHaveBeenCalled();
   });
 });
