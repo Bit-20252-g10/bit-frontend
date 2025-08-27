@@ -1,14 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HomeService, HomeData, Category, Feature } from '../../../services/home.service';
+import {
+  HomeService,
+  HomeData,
+  Category,
+  Feature,
+} from '../../../services/home.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [RouterModule, CommonModule],
   templateUrl: './home.html',
-  styleUrls: ['./home.css']
+  styleUrls: ['./home.css'],
 })
 export class Home implements OnInit {
   homeData: HomeData | null = null;
@@ -44,7 +49,7 @@ export class Home implements OnInit {
         this.error = 'Error al cargar los datos de la página de inicio';
         this.isLoading = false;
         console.error('Error loading home data:', err);
-      }
+      },
     });
   }
 }

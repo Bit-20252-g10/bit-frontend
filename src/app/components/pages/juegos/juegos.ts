@@ -9,33 +9,44 @@ import { CartService } from '../../../services/cart.service';
   selector: 'app-juegos',
   imports: [RouterModule, CurrencyPipe, NgIf, NgFor, FormsModule],
   templateUrl: './juegos.html',
-  styleUrls: ['./juegos.css']
+  styleUrls: ['./juegos.css'],
 })
 export class Juegos implements OnInit {
   games: Game[] = [];
   filteredGames: Game[] = [];
   isLoading = true;
   error: string | null = null;
-  
+
   // Filtros
   selectedConsole: string = '';
   selectedGenre: string = '';
   selectedPriceRange: string = '';
   showOnlyInStock: boolean = false;
   showOnlyMultiplayer: boolean = false;
-  
+
   // Menú hamburguesa
   filtersOpen: boolean = false;
 
   // Opciones de filtros
   consoles = ['PlayStation', 'Xbox', 'Nintendo'];
-  genres = ['Acción', 'Aventura', 'RPG', 'Estrategia', 'Deportes', 'Carreras', 'Shooter', 'Plataformas', 'Puzzle', 'Otros'];
+  genres = [
+    'Acción',
+    'Aventura',
+    'RPG',
+    'Estrategia',
+    'Deportes',
+    'Carreras',
+    'Shooter',
+    'Plataformas',
+    'Puzzle',
+    'Otros',
+  ];
   priceRanges = [
     { label: 'Todos los precios', min: 0, max: 999999999 },
     { label: 'Menos de $120.000', min: 0, max: 120000 },
     { label: '$120.000 - $200.000', min: 120000, max: 200000 },
     { label: '$200.000 - $280.000', min: 200000, max: 280000 },
-    { label: 'Más de $280.000', min: 280000, max: 999999999 }
+    { label: 'Más de $280.000', min: 280000, max: 999999999 },
   ];
 
   playstationGames: Game[] = [];
@@ -43,7 +54,10 @@ export class Juegos implements OnInit {
   nintendoGames: Game[] = [];
   showSection: 'all' | 'playstation' | 'xbox' | 'nintendo' = 'all';
 
-  constructor(private gamesService: GamesService, private cartService: CartService) {}
+  constructor(
+    private gamesService: GamesService,
+    private cartService: CartService
+  ) {}
 
   ngOnInit() {
     this.loadGames();
@@ -64,8 +78,8 @@ export class Juegos implements OnInit {
     if (this.showOnlyMultiplayer) params.multiplayer = true;
 
     // Aplicar filtro de precio
-    const selectedPriceRange = this.priceRanges.find(range => 
-      range.label === this.selectedPriceRange
+    const selectedPriceRange = this.priceRanges.find(
+      (range) => range.label === this.selectedPriceRange
     );
     if (selectedPriceRange) {
       params.minPrice = selectedPriceRange.min;
@@ -86,7 +100,7 @@ export class Juegos implements OnInit {
         this.error = 'Error al cargar los juegos.';
         this.isLoading = false;
         console.error('Error loading games:', err);
-      }
+      },
     });
   }
 
@@ -94,21 +108,21 @@ export class Juegos implements OnInit {
     this.gamesService.getPlaystationGames().subscribe({
       next: (response) => {
         if (response.allOK) this.playstationGames = response.data;
-      }
+      },
     });
   }
   loadXbox() {
     this.gamesService.getXboxGames().subscribe({
       next: (response) => {
         if (response.allOK) this.xboxGames = response.data;
-      }
+      },
     });
   }
   loadNintendo() {
     this.gamesService.getNintendoGames().subscribe({
       next: (response) => {
         if (response.allOK) this.nintendoGames = response.data;
-      }
+      },
     });
   }
 
@@ -161,20 +175,20 @@ export class Juegos implements OnInit {
         price: game.precio,
         type: 'juego',
         imageUrl: game.imageUrl,
-        brand: game.publisher
+        brand: game.publisher,
       });
-      
+
       // Mostrar notificación de éxito
       this.showSuccessMessage(`${game.name} agregado al carrito`);
-      
+
       // Mostrar el carrito después de un breve delay
       setTimeout(() => {
         this.cartService.showCart();
       }, 500);
-      
+
       // Reducir stock (en una implementación real esto se haría en el backend)
       game.stock--;
-      
+
       // Actualizar juegos filtrados
       this.applyFilters();
     }
@@ -189,12 +203,12 @@ export class Juegos implements OnInit {
 
     // Agregar al DOM
     document.body.appendChild(notification);
-    
+
     // Mostrar con animación
     setTimeout(() => {
       notification.classList.add('show');
     }, 100);
-    
+
     // Remover después de 3 segundos
     setTimeout(() => {
       notification.classList.remove('show');
@@ -208,6 +222,4 @@ export class Juegos implements OnInit {
   applyFilters() {
     this.loadGames();
   }
-  }
-
-
+}

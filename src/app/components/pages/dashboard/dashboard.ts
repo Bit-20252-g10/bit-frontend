@@ -8,7 +8,10 @@ import {
   ProductService,
   ProductModel,
 } from '../../../services/product.service';
-import { InventoryService, InventoryItem } from '../../../services/service/inventory.service';
+import {
+  InventoryService,
+  InventoryItem,
+} from '../../../services/service/inventory.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -39,7 +42,7 @@ export class Dashboard implements OnInit {
     imageUrl: '',
   };
   selectedFile: File | null = null;
-  
+
   isUploading = false;
   consoles: ProductModel[] = [];
   accessories: ProductModel[] = [];
@@ -238,7 +241,11 @@ export class Dashboard implements OnInit {
   }
 
   async addGame() {
-    if (!this.newGame.name || !this.newGame.precio || this.newGame.stock == null) {
+    if (
+      !this.newGame.name ||
+      !this.newGame.precio ||
+      this.newGame.stock == null
+    ) {
       this.error = 'Faltan campos obligatorios: nombre, precio y stock';
       console.error('Faltan campos obligatorios');
       return;
@@ -251,21 +258,22 @@ export class Dashboard implements OnInit {
         imageUrl = await this.uploadImage();
       }
 
-
       const productData: Partial<InventoryItem> = {
         name: this.newGame.name || '',
         type: 'games' as const,
-        description: this.newGame.descripcion || "",
+        description: this.newGame.descripcion || '',
         price: this.newGame.precio || 0,
         stock: this.newGame.stock || 0,
-        imageUrl: imageUrl || "https://placehold.co/400x300/e9ecef/212529?text=Sin+Imagen",
-        consola: this.newGame.consola || "",
-        genero: this.newGame.genero || "",
-        developer: this.newGame.developer || "",
-        publisher: this.newGame.publisher || "",
+        imageUrl:
+          imageUrl ||
+          'https://placehold.co/400x300/e9ecef/212529?text=Sin+Imagen',
+        consola: this.newGame.consola || '',
+        genero: this.newGame.genero || '',
+        developer: this.newGame.developer || '',
+        publisher: this.newGame.publisher || '',
         releaseYear: this.newGame.releaseYear || undefined,
         rating: this.newGame.rating || 'E',
-        multiplayer: this.newGame.multiplayer || false
+        multiplayer: this.newGame.multiplayer || false,
       };
 
       console.log('Datos del producto a enviar:', productData);
@@ -610,33 +618,48 @@ export class Dashboard implements OnInit {
   }
 
   saveEditProduct(product: InventoryItem, index: number) {
-    if (this.editedProduct.price == null || this.editedProduct.stock == null || !this.editedProduct.name) {
+    if (
+      this.editedProduct.price == null ||
+      this.editedProduct.stock == null ||
+      !this.editedProduct.name
+    ) {
       this.error = 'Nombre, precio y stock son obligatorios';
       return;
     }
 
-    this.inventoryService.updateItem(product._id, this.editedProduct).subscribe({
-      next: (response) => {
-        if (response.allOK) {
-          if (product.type === 'games') {
-            this.games[index] = { ...this.games[index], ...this.editedProduct } as Game;
-          } else if (product.type === 'consoles') {
-            this.consoles[index] = { ...this.consoles[index], ...this.editedProduct } as ProductModel;
-          } else if (product.type === 'accessories') {
-            this.accessories[index] = { ...this.accessories[index], ...this.editedProduct } as ProductModel;
-          }
+    this.inventoryService
+      .updateItem(product._id, this.editedProduct)
+      .subscribe({
+        next: (response) => {
+          if (response.allOK) {
+            if (product.type === 'games') {
+              this.games[index] = {
+                ...this.games[index],
+                ...this.editedProduct,
+              } as Game;
+            } else if (product.type === 'consoles') {
+              this.consoles[index] = {
+                ...this.consoles[index],
+                ...this.editedProduct,
+              } as ProductModel;
+            } else if (product.type === 'accessories') {
+              this.accessories[index] = {
+                ...this.accessories[index],
+                ...this.editedProduct,
+              } as ProductModel;
+            }
 
-          this.successMessage = 'Producto actualizado correctamente';
-          this.cancelEditProduct();
-          setTimeout(() => this.successMessage = null, 3000);
-        } else {
-          this.error = response.message;
-        }
-      },
-      error: () => {
-        this.error = 'Error al actualizar el producto.';
-      }
-    });
+            this.successMessage = 'Producto actualizado correctamente';
+            this.cancelEditProduct();
+            setTimeout(() => (this.successMessage = null), 3000);
+          } else {
+            this.error = response.message;
+          }
+        },
+        error: () => {
+          this.error = 'Error al actualizar el producto.';
+        },
+      });
   }
 
   deleteProduct(product: InventoryItem, index: number) {
@@ -647,17 +670,18 @@ export class Dashboard implements OnInit {
         if (response.allOK) {
           if (product.type === 'games') this.games.splice(index, 1);
           else if (product.type === 'consoles') this.consoles.splice(index, 1);
-          else if (product.type === 'accessories') this.accessories.splice(index, 1);
+          else if (product.type === 'accessories')
+            this.accessories.splice(index, 1);
 
           this.successMessage = 'Producto eliminado correctamente';
-          setTimeout(() => this.successMessage = null, 3000);
+          setTimeout(() => (this.successMessage = null), 3000);
         } else {
           this.error = response.message;
         }
       },
       error: () => {
         this.error = 'Error al eliminar el producto.';
-      }
+      },
     });
   }
 }

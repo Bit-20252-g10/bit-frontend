@@ -9,7 +9,7 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './cart.html',
-  styleUrls: ['./cart.css']
+  styleUrls: ['./cart.css'],
 })
 export class CartComponent implements OnInit, OnDestroy {
   cartItems: CartItem[] = [];
@@ -19,16 +19,23 @@ export class CartComponent implements OnInit, OnDestroy {
 
   showClearCartModal: boolean = false;
 
-  constructor(private cartService: CartService, private toastr: ToastrService) {}
+  constructor(
+    private cartService: CartService,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit() {
-    this.cartSubscription = this.cartService.getCartItems().subscribe(items => {
-      this.cartItems = items;
-    });
+    this.cartSubscription = this.cartService
+      .getCartItems()
+      .subscribe((items) => {
+        this.cartItems = items;
+      });
 
-    this.visibilitySubscription = this.cartService.getCartVisible().subscribe(visible => {
-      this.isVisible = visible;
-    });
+    this.visibilitySubscription = this.cartService
+      .getCartVisible()
+      .subscribe((visible) => {
+        this.isVisible = visible;
+      });
   }
 
   ngOnDestroy() {
@@ -54,11 +61,9 @@ export class CartComponent implements OnInit, OnDestroy {
     target.style.display = 'none';
   }
 
-
   openClearCartModal() {
     this.showClearCartModal = true;
   }
-
 
   closeClearCartModal(confirmed: boolean) {
     if (confirmed) {
@@ -72,25 +77,28 @@ export class CartComponent implements OnInit, OnDestroy {
     try {
       const message = this.createWhatsAppMessage();
       const phoneNumber = '573155230570';
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+        message
+      )}`;
 
       this.toastr.info('Abriendo WhatsApp para procesar tu pedido...');
-      
+
       const newWindow = window.open(whatsappUrl, '_blank');
       if (!newWindow) {
-        this.toastr.error('El navegador bloqueó la ventana emergente. Por favor, revisa la configuración.');
-
+        this.toastr.error(
+          'El navegador bloqueó la ventana emergente. Por favor, revisa la configuración.'
+        );
       }
 
       setTimeout(() => {
         this.cartService.clearCart();
         this.closeCart();
       }, 1000);
-
     } catch (error) {
       console.error('Error al abrir WhatsApp:', error);
-      this.toastr.error('Ocurrió un error al intentar abrir WhatsApp. Inténtalo de nuevo más tarde.');
-      
+      this.toastr.error(
+        'Ocurrió un error al intentar abrir WhatsApp. Inténtalo de nuevo más tarde.'
+      );
 
       this.cartService.clearCart();
       this.closeCart();
@@ -99,28 +107,40 @@ export class CartComponent implements OnInit, OnDestroy {
 
   private createWhatsAppMessage(): string {
     const total = this.getCartTotal();
-    
+
     let message = `NUEVO PEDIDO - Princegaming\n\n`;
     message += `Productos solicitados:\n\n`;
-    
+
     this.cartItems.forEach((item, index) => {
       const subtotal = item.price * item.quantity;
       message += `${index + 1}. ${item.name}\n`;
       message += `   Marca: ${item.brand || 'N/A'}\n`;
       message += `   Tipo: ${this.getTypeLabel(item.type)}\n`;
       message += `   Cantidad: ${item.quantity}\n`;
-      const formattedPrice = item.price ? item.price.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }) : 'N/A';
+      const formattedPrice = item.price
+        ? item.price.toLocaleString('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+          })
+        : 'N/A';
       message += `   Precio: ${formattedPrice} c/u\n`;
-      const formattedSubtotal = subtotal ? subtotal.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }) : 'N/A';
+      const formattedSubtotal = subtotal
+        ? subtotal.toLocaleString('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+          })
+        : 'N/A';
       message += `   Subtotal: ${formattedSubtotal}\n\n`;
     });
-    
-    message += `TOTAL: ${total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}\n\n`;
+
+    message += `TOTAL: ${total.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+    })}\n\n`;
     message += `Por favor, confirma mi pedido y proporciona información sobre el envío.`;
-    
+
     return message;
   }
-
 
   getCartTotal(): number {
     return this.cartService.getCartTotal();
@@ -128,7 +148,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   getTypeLabel(type: string): string {
     const labels: { [key: string]: string } = {
-      'juego': 'Juego'
+      juego: 'Juego',
     };
     return labels[type] || type;
   }

@@ -19,7 +19,7 @@ export interface LoginResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null>;
@@ -42,28 +42,30 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, {
-      email,
-      password
-    }).pipe(
-      map(response => {
-        localStorage.setItem('authToken', response.token);
-        localStorage.setItem('userData', JSON.stringify(response.user));
-        this.currentUserSubject.next(response.user);
-        return response;
-      }),
-      catchError((error: HttpErrorResponse) => {
-        console.log('AuthService caught error:', error);
-        // Re-throw the error in a consistent format
-        const formattedError = {
-          status: error.status,
-          statusText: error.statusText,
-          error: error.error
-        };
-        console.log('Re-throwing formatted error:', formattedError);
-        return throwError(() => formattedError);
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/login`, {
+        email,
+        password,
       })
-    );
+      .pipe(
+        map((response) => {
+          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('userData', JSON.stringify(response.user));
+          this.currentUserSubject.next(response.user);
+          return response;
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.log('AuthService caught error:', error);
+          // Re-throw the error in a consistent format
+          const formattedError = {
+            status: error.status,
+            statusText: error.statusText,
+            error: error.error,
+          };
+          console.log('Re-throwing formatted error:', formattedError);
+          return throwError(() => formattedError);
+        })
+      );
   }
 
   logout(): void {
@@ -84,17 +86,19 @@ export class AuthService {
   validateToken(): Observable<boolean> {
     const token = this.getToken();
     if (!token) {
-      return new Observable(observer => {
+      return new Observable((observer) => {
         observer.next(false);
         observer.complete();
       });
     }
-    return this.http.get<{ message: string; user: any }>(`${this.apiUrl}/verify`).pipe(
-      map(response => !!response.user),
-      catchError(() => {
-        this.logout();
-        return of(false);
-      })
-    );
+    return this.http
+      .get<{ message: string; user: any }>(`${this.apiUrl}/verify`)
+      .pipe(
+        map((response) => !!response.user),
+        catchError(() => {
+          this.logout();
+          return of(false);
+        })
+      );
   }
-} 
+}

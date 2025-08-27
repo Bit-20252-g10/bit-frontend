@@ -5,8 +5,6 @@ import { RouterModule } from '@angular/router';
   selector: 'app-page-not-found',
   imports: [RouterModule],
   templateUrl: './page-not-found.html',
-  styleUrls: ['./page-not-found.css']
+  styleUrls: ['./page-not-found.css'],
 })
-export class PageNotFound {
-
-}
+export class PageNotFound {}

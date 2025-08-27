@@ -9,9 +9,8 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [RouterModule, CommonModule],
   templateUrl: './header.html',
-  styleUrls: ['./header.css']
+  styleUrls: ['./header.css'],
 })
-
 export class HeaderComponent implements OnInit, OnDestroy {
   cartItemCount = 0;
   private cartSubscription: Subscription = new Subscription();
@@ -19,9 +18,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(private cartService: CartService) {}
 
   ngOnInit() {
-    this.cartSubscription = this.cartService.getCartItems().subscribe(items => {
-      this.cartItemCount = this.cartService.getCartItemCount();
-    });
+    this.cartSubscription = this.cartService
+      .getCartItems()
+      .subscribe((items) => {
+        this.cartItemCount = this.cartService.getCartItemCount();
+      });
   }
 
   ngOnDestroy() {
