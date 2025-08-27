@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 export interface User {
@@ -50,6 +50,17 @@ export class AuthService {
         localStorage.setItem('userData', JSON.stringify(response.user));
         this.currentUserSubject.next(response.user);
         return response;
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.log('AuthService caught error:', error);
+        // Re-throw the error in a consistent format
+        const formattedError = {
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error
+        };
+        console.log('Re-throwing formatted error:', formattedError);
+        return throwError(() => formattedError);
       })
     );
   }

@@ -5,14 +5,7 @@
     <p>Cargando...</p>
   </div>
 
-  <div *ngIf="!isLoading && !error">
-    <section class="hero-section">
-      <div class="hero-content">
-        <h1>{{ homeData?.hero?.heroTitle || 'Bienvenido a Princegaming' }}</h1>
-  <div *ngIf="error && !isLoading" class="error-container">
-    <p>{{ error }}</p>
-    <button (click)="loadHomeData()" class="btn btn-primary">Reintentar</button>
-  </div>
+
 
   <!-- contenido -->
   <div *ngIf="!isLoading && !error">

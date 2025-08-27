@@ -53,18 +53,27 @@ export class LoginComponent implements OnInit {
         },
         error: (error) => {
           console.error('Login error:', error);
+          console.log('Error type:', typeof error);
+          console.log('Error properties:', Object.keys(error));
+          console.log('Error status:', error.status);
+          console.log('Error status from any:', (error as any).status);
+          
           this.isLoading = false;
           
-          if (error.status === 401) {
+          // Handle both HttpErrorResponse and simple error objects
+          const status = error.status || (error as any).status;
+          console.log('Final status:', status);
+          
+          if (status === 401) {
             this.errorMessage = 'Credenciales incorrectas. Por favor, verifica tu email y contraseña.';
             this.toastr.error('Credenciales incorrectas', 'Error de autenticación');
-          } else if (error.status === 404) {
+          } else if (status === 404) {
             this.errorMessage = 'Usuario no encontrado.';
             this.toastr.error('Usuario no encontrado', 'Error');
-          } else if (error.status === 0) {
+          } else if (status === 0) {
             this.errorMessage = 'No se puede conectar al servidor. Verifica que el backend esté ejecutándose.';
             this.toastr.error('Error de conexión', 'No se puede conectar al servidor');
-          } else if (error.status === 500) {
+          } else if (status === 500) {
             this.errorMessage = 'Error interno del servidor. Por favor, contacta al administrador.';
             this.toastr.error('Error del servidor', 'Error interno');
           } else {
