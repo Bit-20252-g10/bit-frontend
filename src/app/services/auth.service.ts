@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { environment } from '../environment/environment.development';
 
 export interface User {
   id?: string;
@@ -23,7 +24,7 @@ export interface LoginResponse {
 export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
-  private apiUrl = 'http://localhost:4000/users';
+  private apiUrl = environment.apiUrl + '/users';
 
   constructor(private http: HttpClient) {
     this.currentUserSubject = new BehaviorSubject<User | null>(

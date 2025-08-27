@@ -48,6 +48,12 @@ export class CartComponent implements OnInit, OnDestroy {
     this.cartService.removeFromCart(itemId);
   }
 
+  handleImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    // Hide the broken image and let the placeholder show instead
+    target.style.display = 'none';
+  }
+
 
   openClearCartModal() {
     this.showClearCartModal = true;
@@ -103,8 +109,10 @@ export class CartComponent implements OnInit, OnDestroy {
       message += `   Marca: ${item.brand || 'N/A'}\n`;
       message += `   Tipo: ${this.getTypeLabel(item.type)}\n`;
       message += `   Cantidad: ${item.quantity}\n`;
-      message += `   Precio: ${item.price.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })} c/u\n`;
-      message += `   Subtotal: ${subtotal.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}\n\n`;
+      const formattedPrice = item.price ? item.price.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }) : 'N/A';
+      message += `   Precio: ${formattedPrice} c/u\n`;
+      const formattedSubtotal = subtotal ? subtotal.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }) : 'N/A';
+      message += `   Subtotal: ${formattedSubtotal}\n\n`;
     });
     
     message += `TOTAL: ${total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}\n\n`;

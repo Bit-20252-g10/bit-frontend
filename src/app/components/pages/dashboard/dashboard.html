@@ -1,5 +1,5 @@
 <!-- dashboard.html -->
-<div class="max-w-4xl mx-auto p-6">
+<div class="max-w-6xl mx-auto p-6">
   <!-- Mensajes -->
   <div *ngIf="error" class="bg-red-100 text-red-800 p-3 rounded mb-4">
     {{ error }}
@@ -8,14 +8,50 @@
     {{ successMessage }}
   </div>
 
-  <!-- Botón alternar formulario -->
-  <button (click)="showAddForm = !showAddForm"
-          class="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-    {{ showAddForm ? 'Cancelar' : 'Agregar Juego' }}
-  </button>
+  <!-- Sección de Juegos -->
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Panel de Control</h2>
 
-  <!-- Formulario de agregar juego -->
-  <form *ngIf="showAddForm" (ngSubmit)="addGame()" #gameForm="ngForm" class="space-y-4">
+    <!-- Botón alternar formulario -->
+    <button (click)="showAddForm = !showAddForm"
+            class="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+      {{ showAddForm ? 'Cancelar' : 'Agregar Producto' }}
+    </button>
+
+    <!-- Lista de Juegos -->
+    <div *ngIf="games.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div *ngFor="let game of games; let i = index" class="bg-white rounded-lg shadow-md p-4">
+        <div class="mb-3">
+          <img *ngIf="game.imageUrl" [src]="game.imageUrl" [alt]="game.name" class="w-full h-48 object-cover rounded">
+          <div *ngIf="!game.imageUrl" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
+            <span class="text-gray-500">Sin imagen</span>
+          </div>
+        </div>
+        <h3 class="font-semibold text-lg mb-2">{{ game.name }}</h3>
+        <p class="text-gray-600 mb-2">{{ game.descripcion || 'Sin descripción' }}</p>
+        <p class="text-green-600 font-bold mb-2">{{ game.precio | currency }}</p>
+        <p class="text-sm mb-2">
+          Stock: <span [class]="getStockClass(game.stock)">{{ game.stock }}</span>
+        </p>
+        <p class="text-sm text-gray-500 mb-3">Consola: {{ game.consola || 'N/A' }}</p>
+        
+        <div class="flex space-x-2">
+          <button (click)="startEdit(i)" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
+            Editar
+          </button>
+          <button (click)="deleteGame(game, i)" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="games.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
+      No hay juegos disponibles
+    </div>
+
+    <!-- Formulario de agregar juego -->
+    <form *ngIf="showAddForm" (ngSubmit)="addGame()" #gameForm="ngForm" class="space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block font-semibold">Nombre</label>
@@ -101,10 +137,10 @@
 <!-- Formulario de agregar consola (dashboard.html) -->
 <div class="max-w-4xl mx-auto p-6">
   <!-- Alternar formulario -->
-  <button (click)="showAddConsoleForm = !showAddConsoleForm"
+  <!-- <button (click)="showAddConsoleForm = !showAddConsoleForm"
           class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
     {{ showAddConsoleForm ? 'Cancelar' : 'Agregar Consola' }}
-  </button>
+  </button> -->
 
   <!-- Formulario Consola -->
   <form *ngIf="showAddConsoleForm" (ngSubmit)="addConsole()" #consoleForm="ngForm" class="space-y-4">
@@ -180,10 +216,10 @@
 <!-- Sección agregar accesorio -->
 <div class="max-w-4xl mx-auto p-6">
   <!-- Botón mostrar/ocultar formulario -->
-  <button (click)="showAddAccessoryForm = !showAddAccessoryForm"
+  <!-- <button (click)="showAddAccessoryForm = !showAddAccessoryForm"
           class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
     {{ showAddAccessoryForm ? 'Cancelar' : 'Agregar Accesorio' }}
-  </button>
+  </button> -->
 
   <!-- Formulario accesorio -->
   <form *ngIf="showAddAccessoryForm" (ngSubmit)="addAccessory()" #accessoryForm="ngForm" class="space-y-4">
@@ -238,4 +274,90 @@
     </button>
   </form>
 </div>
+
+  <!-- Sección de Consolas -->
+  <!-- <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Consolas</h2> -->
+    
+    <!-- Botón alternar formulario -->
+    <!-- <button (click)="showAddConsoleForm = !showAddConsoleForm"
+            class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+      {{ showAddConsoleForm ? 'Cancelar' : 'Agregar Consola' }}
+    </button> -->
+
+    <!-- Lista de Consolas -->
+    <!-- <div *ngIf="consoles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div *ngFor="let console of consoles; let i = index" class="bg-white rounded-lg shadow-md p-4">
+        <div class="mb-3">
+          <img *ngIf="console.imageUrl" [src]="console.imageUrl" [alt]="console.name" class="w-full h-48 object-cover rounded">
+          <div *ngIf="!console.imageUrl" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
+            <span class="text-gray-500">Sin imagen</span>
+          </div>
+        </div>
+        <h3 class="font-semibold text-lg mb-2">{{ console.name }}</h3>
+        <p class="text-gray-600 mb-2">{{ console.description || 'Sin descripción' }}</p>
+        <p class="text-green-600 font-bold mb-2">{{ console.price | currency }}</p>
+        <p class="text-sm mb-2">
+          Stock: <span [class]="getStockClass(console.stock)">{{ console.stock }}</span>
+        </p>
+        
+        <div class="flex space-x-2">
+          <button (click)="startEditConsole(i)" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
+            Editar
+          </button>
+          <button (click)="deleteConsole(console, i)" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="consoles.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
+      No hay consolas disponibles
+    </div>
+  </div> -->
+
+  <!-- Sección de Accesorios -->
+  <!-- <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Accesorios</h2> -->
+    
+    <!-- Botón alternar formulario -->
+    <!-- <button (click)="showAddAccessoryForm = !showAddAccessoryForm"
+            class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+      {{ showAddAccessoryForm ? 'Cancelar' : 'Agregar Accesorio' }}
+    </button> -->
+
+    <!-- Lista de Accesorios -->
+    <!-- <div *ngIf="accessories.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div *ngFor="let accessory of accessories; let i = index" class="bg-white rounded-lg shadow-md p-4">
+        <div class="mb-3">
+          <img *ngIf="accessory.imageUrl" [src]="accessory.imageUrl" [alt]="accessory.name" class="w-full h-48 object-cover rounded">
+          <div *ngIf="!accessory.imageUrl" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
+            <span class="text-gray-500">Sin imagen</span>
+          </div>
+        </div>
+        <h3 class="font-semibold text-lg mb-2">{{ accessory.name }}</h3>
+        <p class="text-gray-600 mb-2">{{ accessory.description || 'Sin descripción' }}</p>
+        <p class="text-green-600 font-bold mb-2">{{ accessory.price | currency }}</p>
+        <p class="text-sm mb-2">
+          Stock: <span [class]="getStockClass(accessory.stock)">{{ accessory.stock }}</span>
+        </p>
+        <p class="text-sm text-gray-500 mb-3">Categoría: {{ accessory.category || 'N/A' }}</p>
+        
+        <div class="flex space-x-2">
+          <button (click)="startEditAccessory(i)" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
+            Editar
+          </button>
+          <button (click)="deleteAccessory(accessory, i)" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div> -->
+
+    <div *ngIf="accessories.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
+      No hay accesorios disponibles
+    </div>
+  </div>
+
 

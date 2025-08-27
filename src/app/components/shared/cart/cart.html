@@ -1,8 +1,8 @@
 <div class="cart-overlay" [class.visible]="isVisible" (click)="closeCart()">
   <div class="cart-modal" (click)="$event.stopPropagation()">
     <div class="cart-header">
-      <h2>🛒 Compras</h2>
-      <button class="close-btn" (click)="closeCart()">×</button>
+      <h2><i class="bi bi-cart4"></i>Compras</h2>
+      <button class="close-btn" (click)="closeCart()"><i class="bi bi-x-square"></i></button>
     </div>
 
     <div class="cart-content">
@@ -15,8 +15,17 @@
       <div *ngIf="cartItems.length > 0" class="cart-items">
         <div *ngFor="let item of cartItems" class="cart-item">
           <div class="item-image">
-            <div class="placeholder-image">
-              <span class="placeholder-icon">🎮</span>
+            <div class="product-image-container">
+              <img 
+                *ngIf="item.imageUrl" 
+                [src]="item.imageUrl" 
+                [alt]="item.name"
+                class="product-image"
+                (error)="handleImageError($event)"
+              >
+              <div *ngIf="!item.imageUrl" class="placeholder-image">
+                <span class="placeholder-icon">🎮</span>
+              </div>
             </div>
           </div>
 
@@ -52,7 +61,7 @@
             >
           </div>
 
-          <button class="remove-btn" (click)="removeItem(item.id)">🗑️</button>
+          <button class="remove-btn" (click)="removeItem(item.id)"><i class="bi bi-trash3"></i></button>
         </div>
       </div>
     </div>

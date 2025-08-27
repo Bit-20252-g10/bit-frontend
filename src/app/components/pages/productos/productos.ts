@@ -361,6 +361,14 @@ export class Productos implements OnInit {
   }
 
   buyProduct(product: Product) {
+    console.log('Adding product to cart:', {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      type: product.type,
+      imageUrl: product.imageUrl,
+      brand: product.brand
+    });
     this.cartService.addToCart({
       id: product.id,
       name: product.name,
@@ -430,7 +438,14 @@ export class Productos implements OnInit {
 
   buyGame(game: Game) {
     if (game.stock > 0) {
-
+      console.log('Adding game to cart:', {
+        id: game._id,
+        name: game.name,
+        price: game.precio,
+        type: 'juego',
+        imageUrl: game.imageUrl,
+        brand: game.publisher
+      });
       this.cartService.addToCart({
         id: game._id,
         name: game.name,
@@ -441,4 +456,5 @@ export class Productos implements OnInit {
       });
       this.cartService.showCart();
     }
-  }}
+  }
+}
