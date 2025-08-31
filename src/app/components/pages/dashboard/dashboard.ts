@@ -13,6 +13,7 @@ import {
   InventoryItem,
 } from '../../../services/service/inventory.service';
 import { HttpClient } from '@angular/common/http';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-dashboard',
@@ -94,7 +95,8 @@ export class Dashboard implements OnInit {
     private uploadService: UploadService,
     private router: Router,
     private http: HttpClient,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit() {
@@ -108,14 +110,32 @@ export class Dashboard implements OnInit {
     this.gamesService.getAllGames().subscribe({
       next: (response) => {
         if (response.allOK) {
-          this.games = response.data;
+          // Map the response data to match the Game interface expected by the dashboard
+          this.games = response.data.map((item: any) => ({
+            _id: item._id,
+            name: item.name,
+            consola: item.consola,
+            genero: item.genero,
+            descripcion: item.description,
+            precio: item.price,
+            stock: item.stock,
+            developer: item.developer,
+            publisher: item.publisher,
+            releaseYear: item.releaseYear,
+            rating: item.rating,
+            multiplayer: item.multiplayer,
+            imageUrl: item.imageUrl,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            isActive: item.isActive ?? true,
+          }));
         } else {
-          this.error = response.message;
+          this.toastr.error(response.message, 'Error');
         }
         this.isLoading = false;
       },
       error: (err) => {
-        this.error = 'Error al cargar los juegos.';
+        this.toastr.error('Error al cargar los juegos.', 'Error');
         this.isLoading = false;
       },
     });
@@ -131,24 +151,47 @@ export class Dashboard implements OnInit {
     this.editedGame = {};
   }
 
-  saveEdit(game: Game) {
-    if (!this.editedGame.precio || !this.editedGame.stock) return;
-    this.gamesService
-      .updateGame(game._id, {
-        precio: this.editedGame.precio,
+  saveEdit() {
+    const editIndex = this.editIndex;
+    if (!this.editedGame.precio || !this.editedGame.stock || editIndex == null) {
+      this.toastr.error('Datos de edición inválidos', 'Error');
+      return;
+    }
+
+    if (editIndex < 0 || editIndex >= this.games.length) {
+      this.toastr.error('Índice de juego inválido', 'Error');
+      this.cancelEdit();
+      return;
+    }
+
+    const game = this.games[editIndex];
+    if (!game || !game._id) {
+      this.toastr.error('Juego no encontrado', 'Error');
+      this.cancelEdit();
+      return;
+    }
+
+    this.inventoryService.updateItem(game._id, {
+        price: this.editedGame.precio,
         stock: this.editedGame.stock,
       })
       .subscribe({
         next: (response) => {
           if (response.allOK) {
-            this.games[this.editIndex!] = { ...game, ...response.data };
+            this.games[editIndex] = {
+              ...this.games[editIndex],
+              precio: this.editedGame.precio!,
+              stock: this.editedGame.stock!,
+              updatedAt: response.data.updatedAt
+            };
             this.cancelEdit();
+            this.toastr.success('Juego actualizado correctamente', 'Éxito');
           } else {
-            this.error = response.message;
+            this.toastr.error(response.message, 'Error');
           }
         },
         error: (err) => {
-          this.error = 'Error al guardar los cambios.';
+          this.toastr.error('Error al guardar los cambios.', 'Error');
         },
       });
   }
@@ -159,12 +202,14 @@ export class Dashboard implements OnInit {
       next: (response) => {
         if (response.allOK) {
           this.games.splice(index, 1);
+          // Mostrar alerta con componente Angular Toastr
+          this.toastr.success('Juego eliminado correctamente', 'Éxito');
         } else {
-          this.error = response.message;
+          this.toastr.error(response.message, 'Error');
         }
       },
       error: (err) => {
-        this.error = 'Error al eliminar el juego.';
+        this.toastr.error('Error al eliminar el juego.', 'Error');
       },
     });
   }
@@ -173,6 +218,7 @@ export class Dashboard implements OnInit {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     this.router.navigate(['/login']);
+    this.toastr.info('Sesión cerrada', 'Info');
   }
 
   getPriceClass(precio: number): string {
@@ -243,11 +289,10 @@ export class Dashboard implements OnInit {
   async addGame() {
     if (
       !this.newGame.name ||
-      !this.newGame.precio ||
+      (this.newGame.precio === undefined || this.newGame.precio === null) ||
       this.newGame.stock == null
     ) {
-      this.error = 'Faltan campos obligatorios: nombre, precio y stock';
-      console.error('Faltan campos obligatorios');
+      this.toastr.error('Faltan campos obligatorios: nombre, precio y stock', 'Error');
       return;
     }
 
@@ -280,25 +325,21 @@ export class Dashboard implements OnInit {
 
       this.inventoryService.createItem(productData).subscribe({
         next: (response: any) => {
-          console.log('Producto agregado correctamente:', response);
           if (response.allOK) {
-            this.successMessage = 'Producto agregado exitosamente';
+            this.toastr.success('Producto agregado exitosamente', 'Éxito');
             this.loadGames(); // refrescar lista
             this.showAddForm = false;
             this.resetForm(); // limpiar formulario
-            setTimeout(() => (this.successMessage = null), 2500);
           } else {
-            this.error = response.message;
+            this.toastr.error(response.message, 'Error');
           }
         },
         error: (err: any) => {
-          console.error('Error al agregar producto:', err);
-          this.error = 'No se pudo agregar el producto';
+          this.toastr.error('No se pudo agregar el producto', 'Error');
         },
       });
     } catch (error: any) {
-      this.error = error.message || error;
-      console.error('Error en addGame:', error);
+      this.toastr.error(error.message || error, 'Error');
     }
   }
 
@@ -369,12 +410,12 @@ export class Dashboard implements OnInit {
         if (response.allOK) {
           this.consoles = response.data;
         } else {
-          this.error = response.message;
+          this.toastr.error(response.message, 'Error');
         }
         this.isLoading = false;
       },
       error: (err) => {
-        this.error = 'Error al cargar las consolas.';
+        this.toastr.error('Error al cargar las consolas.', 'Error');
         this.isLoading = false;
       },
     });
@@ -387,12 +428,12 @@ export class Dashboard implements OnInit {
         if (response.allOK) {
           this.accessories = response.data;
         } else {
-          this.error = response.message;
+          this.toastr.error(response.message, 'Error');
         }
         this.isLoading = false;
       },
       error: (err) => {
-        this.error = 'Error al cargar los accesorios.';
+        this.toastr.error('Error al cargar los accesorios.', 'Error');
         this.isLoading = false;
       },
     });
@@ -427,15 +468,99 @@ export class Dashboard implements OnInit {
   }
 
   async addConsole() {
-    alert(
-      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
-    );
+    if (
+      !this.newConsole.name ||
+      !this.newConsole.price ||
+      this.newConsole.stock == null
+    ) {
+      this.toastr.error('Faltan campos obligatorios: nombre, precio y stock', 'Error');
+      return;
+    }
+
+    try {
+      let imageUrl = '';
+      if (this.newConsole.selectedFile) {
+        imageUrl = await this.uploadConsoleImage();
+      }
+
+      const consoleData: any = {
+        name: this.newConsole.name || '',
+        price: this.newConsole.price || 0,
+        stock: this.newConsole.stock || 0,
+        description: this.newConsole.description || '',
+        imageUrl: imageUrl || 'https://placehold.co/400x300/e9ecef/212529?text=Sin+Imagen',
+        brand: this.newConsole.brand || '',
+        model: this.newConsole.model || '',
+        features: this.newConsole.features || '',
+        releaseYear: this.newConsole.releaseYear,
+        color: this.newConsole.color || '',
+        category: 'console',
+      };
+
+      this.productService.createConsole(consoleData).subscribe({
+        next: (response) => {
+          if (response.allOK) {
+            this.toastr.success('Consola agregada exitosamente', 'Éxito');
+            this.loadConsoles();
+            this.showAddConsoleForm = false;
+            this.resetConsoleForm();
+          } else {
+            this.toastr.error(response.message, 'Error');
+          }
+        },
+        error: () => {
+          this.toastr.error('No se pudo agregar la consola', 'Error');
+        },
+      });
+    } catch (error: any) {
+      this.toastr.error(error.message || error, 'Error');
+    }
   }
 
   async addAccessory() {
-    alert(
-      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
-    );
+    if (
+      !this.newAccessory.name ||
+      !this.newAccessory.price ||
+      this.newAccessory.stock == null
+    ) {
+      this.toastr.error('Faltan campos obligatorios: nombre, precio y stock', 'Error');
+      return;
+    }
+
+    try {
+      let imageUrl = '';
+      if (this.newAccessory.selectedFile) {
+        imageUrl = await this.uploadAccessoryImage();
+      }
+
+      const accessoryData: any = {
+        name: this.newAccessory.name || '',
+        price: this.newAccessory.price || 0,
+        stock: this.newAccessory.stock || 0,
+        description: this.newAccessory.description || '',
+        imageUrl: imageUrl || 'https://placehold.co/400x300/e9ecef/212529?text=Sin+Imagen',
+        brand: this.newAccessory.brand || '',
+        category: this.newAccessory.category || '',
+      };
+
+      this.productService.createAccessory(accessoryData).subscribe({
+        next: (response) => {
+          if (response.allOK) {
+            this.toastr.success('Accesorio agregado exitosamente', 'Éxito');
+            this.loadAccessories();
+            this.showAddAccessoryForm = false;
+            this.resetAccessoryForm();
+          } else {
+            this.toastr.error(response.message, 'Error');
+          }
+        },
+        error: () => {
+          this.toastr.error('No se pudo agregar el accesorio', 'Error');
+        },
+      });
+    } catch (error: any) {
+      this.toastr.error(error.message || error, 'Error');
+    }
   }
 
   resetConsoleForm() {
@@ -554,9 +679,21 @@ export class Dashboard implements OnInit {
   }
 
   deleteConsole(consoleItem: ProductModel, index: number) {
-    alert(
-      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
-    );
+    if (!confirm(`¿Seguro que quieres eliminar "${consoleItem.name}"?`)) return;
+
+    this.productService.deleteConsole(consoleItem._id).subscribe({
+      next: (response) => {
+        if (response.allOK) {
+          this.consoles.splice(index, 1);
+          this.toastr.success('Consola eliminada correctamente', 'Éxito');
+        } else {
+          this.toastr.error(response.message, 'Error');
+        }
+      },
+      error: () => {
+        this.toastr.error('Error al eliminar la consola.', 'Error');
+      },
+    });
   }
 
   startEditAccessory(index: number) {
@@ -570,7 +707,10 @@ export class Dashboard implements OnInit {
   }
 
   saveEditAccessory(accessoryItem: ProductModel) {
-    if (!this.editedAccessory.price || !this.editedAccessory.stock) return;
+    if (!this.editedAccessory.price || !this.editedAccessory.stock) {
+      this.toastr.error('Precio y stock son obligatorios', 'Error');
+      return;
+    }
     this.productService
       .updateProduct(accessoryItem._id, {
         name: this.editedAccessory.name,
@@ -587,20 +727,33 @@ export class Dashboard implements OnInit {
               ...response.data,
             };
             this.cancelEditAccessory();
+            this.toastr.success('Accesorio actualizado correctamente', 'Éxito');
           } else {
-            this.error = response.message;
+            this.toastr.error(response.message, 'Error');
           }
         },
         error: (err) => {
-          this.error = 'Error al guardar los cambios del accesorio.';
+          this.toastr.error('Error al guardar los cambios del accesorio.', 'Error');
         },
       });
   }
 
   deleteAccessory(accessoryItem: ProductModel, index: number) {
-    alert(
-      'Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación'
-    );
+    if (!confirm(`¿Seguro que quieres eliminar "${accessoryItem.name}"?`)) return;
+
+    this.productService.deleteAccessory(accessoryItem._id).subscribe({
+      next: (response) => {
+        if (response.allOK) {
+          this.accessories.splice(index, 1);
+          this.toastr.success('Accesorio eliminado correctamente', 'Éxito');
+        } else {
+          this.toastr.error(response.message, 'Error');
+        }
+      },
+      error: () => {
+        this.toastr.error('Error al eliminar el accesorio.', 'Error');
+      },
+    });
   }
 
   // Variables para edición

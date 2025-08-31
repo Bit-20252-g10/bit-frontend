@@ -52,7 +52,7 @@
       <p>No hay productos para mostrar.</p>
     </div>
     <div class="products-grid">
-      <div *ngFor="let product of products" class="product-card">
+      <div *ngFor="let product of paginatedProducts" class="product-card">
         <div class="product-image">
           <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
         </div>
@@ -72,5 +72,15 @@
         </div>
       </div>
     </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn btn-secondary">Anterior</button>
+      <span *ngFor="let page of getPageNumbers()" 
+            (click)="goToPage(page)" 
+            [class.active]="page === currentPage"
+            class="page-number">{{ page }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn btn-secondary">Siguiente</button>
+    </div>
   </div>
-</div> 
+</div>

@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { By } from '@angular/platform-browser';
+import { HttpErrorResponse } from '@angular/common/http';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -57,11 +58,11 @@ describe('LoginComponent', () => {
   });
 
   it('should handle login error', fakeAsync(() => {
-    const errorResponse = { 
-      status: 401, 
+    const errorResponse = new HttpErrorResponse({
+      status: 401,
       statusText: 'Unauthorized',
       error: { message: 'Unauthorized' }
-    };
+    });
     authServiceMock.login.and.returnValue(throwError(() => errorResponse));
     
     component.loginForm.setValue({ email: 'test@test.com', password: 'wrong' });

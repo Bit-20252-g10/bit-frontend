@@ -1,50 +1,80 @@
 <!-- dashboard.html -->
 <div class="max-w-6xl mx-auto p-6">
-  <!-- Mensajes -->
-  <div *ngIf="error" class="bg-red-100 text-red-800 p-3 rounded mb-4">
-    {{ error }}
-  </div>
-  <div *ngIf="successMessage" class="bg-green-100 text-green-800 p-3 rounded mb-4">
-    {{ successMessage }}
+  <!-- Botón de logout -->
+  <div class="flex justify-end mb-4">
+    <button (click)="logout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+      Cerrar Sesión
+    </button>
   </div>
 
+  <!-- Mensajes Toastr reemplazan estos mensajes -->
   <!-- Sección de Juegos -->
   <div class="mb-8">
-    <h2 class="text-2xl font-bold mb-4">Panel de Control</h2>
+    <h2 class="text-2xl font-bold mb-4">Panel de Control - Juegos</h2>
 
     <!-- Botón alternar formulario -->
     <button (click)="showAddForm = !showAddForm"
             class="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-      {{ showAddForm ? 'Cancelar' : 'Agregar Producto' }}
+      {{ showAddForm ? 'Cancelar' : 'Agregar Juego' }}
     </button>
 
-    <!-- Lista de Juegos -->
-    <div *ngIf="games.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-      <div *ngFor="let game of games; let i = index" class="bg-white rounded-lg shadow-md p-4">
-        <div class="mb-3">
-          <img *ngIf="game.imageUrl" [src]="game.imageUrl" [alt]="game.name" class="w-full h-48 object-cover rounded">
-          <div *ngIf="!game.imageUrl" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
-            <span class="text-gray-500">Sin imagen</span>
-          </div>
-        </div>
-        <h3 class="font-semibold text-lg mb-2">{{ game.name }}</h3>
-        <p class="text-gray-600 mb-2">{{ game.descripcion || 'Sin descripción' }}</p>
-        <p class="text-green-600 font-bold mb-2">{{ game.precio | currency }}</p>
-        <p class="text-sm mb-2">
-          Stock: <span [class]="getStockClass(game.stock)">{{ game.stock }}</span>
-        </p>
-        <p class="text-sm text-gray-500 mb-3">Consola: {{ game.consola || 'N/A' }}</p>
-        
-        <div class="flex space-x-2">
-          <button (click)="startEdit(i)" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
-            Editar
-          </button>
-          <button (click)="deleteGame(game, i)" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Tabla de Juegos -->
+    <table *ngIf="games.length > 0" class="min-w-full bg-black border border-gray-600 rounded">
+      <thead>
+        <tr>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Imagen</th>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Nombre</th>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Descripción</th>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Precio</th>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Stock</th>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Consola</th>
+          <th class="py-2 px-4 border-b border-gray-600 text-white">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let game of games; let i = index" class="hover:bg-gray-800 border-b border-gray-600">
+          <td class="py-2 px-4 border-b">
+            <img *ngIf="game.imageUrl" [src]="game.imageUrl" [alt]="game.name" class="w-16 h-16 object-cover rounded" />
+            <span *ngIf="!game.imageUrl" class="text-gray-500">Sin imagen</span>
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editIndex !== i">{{ game.name }}</span>
+            <input *ngIf="editIndex === i" type="text" [(ngModel)]="editedGame.name"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editIndex !== i">{{ game.descripcion || 'Sin descripción' }}</span>
+            <textarea *ngIf="editIndex === i" [(ngModel)]="editedGame.descripcion"
+                      class="w-full border border-gray-300 px-2 py-1 rounded text-sm" rows="2"></textarea>
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editIndex !== i">{{ game.precio | currency:'USD':'symbol':'1.2-2' }}</span>
+            <input *ngIf="editIndex === i" type="number" [(ngModel)]="editedGame.precio"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editIndex !== i" [class]="getStockClass(game.stock)">{{ game.stock }}</span>
+            <input *ngIf="editIndex === i" type="number" [(ngModel)]="editedGame.stock"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editIndex !== i">{{ game.consola || 'N/A' }}</span>
+            <input *ngIf="editIndex === i" type="text" [(ngModel)]="editedGame.consola"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <div *ngIf="editIndex !== i" class="flex space-x-2">
+              <button (click)="startEdit(i)" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs">Editar</button>
+              <button (click)="deleteGame(game, i)" class="px-2 py-1 bg-red-500 text-white rounded text-xs">Eliminar</button>
+            </div>
+            <div *ngIf="editIndex === i" class="flex space-x-2">
+              <button (click)="saveEdit()" class="px-2 py-1 bg-green-500 text-white rounded text-xs">Guardar</button>
+              <button (click)="cancelEdit()" class="px-2 py-1 bg-gray-500 text-white rounded text-xs">Cancelar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <div *ngIf="games.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
       No hay juegos disponibles
@@ -276,84 +306,145 @@
 </div>
 
   <!-- Sección de Consolas -->
-  <!-- <div class="mb-8">
-    <h2 class="text-2xl font-bold mb-4">Consolas</h2> -->
-    
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Consolas</h2>
+
     <!-- Botón alternar formulario -->
-    <!-- <button (click)="showAddConsoleForm = !showAddConsoleForm"
+    <button (click)="showAddConsoleForm = !showAddConsoleForm"
             class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
       {{ showAddConsoleForm ? 'Cancelar' : 'Agregar Consola' }}
-    </button> -->
+    </button>
 
-    <!-- Lista de Consolas -->
-    <!-- <div *ngIf="consoles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-      <div *ngFor="let console of consoles; let i = index" class="bg-white rounded-lg shadow-md p-4">
-        <div class="mb-3">
-          <img *ngIf="console.imageUrl" [src]="console.imageUrl" [alt]="console.name" class="w-full h-48 object-cover rounded">
-          <div *ngIf="!console.imageUrl" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
-            <span class="text-gray-500">Sin imagen</span>
-          </div>
-        </div>
-        <h3 class="font-semibold text-lg mb-2">{{ console.name }}</h3>
-        <p class="text-gray-600 mb-2">{{ console.description || 'Sin descripción' }}</p>
-        <p class="text-green-600 font-bold mb-2">{{ console.price | currency }}</p>
-        <p class="text-sm mb-2">
-          Stock: <span [class]="getStockClass(console.stock)">{{ console.stock }}</span>
-        </p>
-        
-        <div class="flex space-x-2">
-          <button (click)="startEditConsole(i)" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
-            Editar
-          </button>
-          <button (click)="deleteConsole(console, i)" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Tabla de Consolas -->
+    <table *ngIf="consoles.length > 0" class="min-w-full bg-white border border-gray-300 rounded">
+      <thead>
+        <tr>
+          <th class="py-2 px-4 border-b">Imagen</th>
+          <th class="py-2 px-4 border-b">Nombre</th>
+          <th class="py-2 px-4 border-b">Categoría</th>
+          <th class="py-2 px-4 border-b">Descripción</th>
+          <th class="py-2 px-4 border-b">Precio</th>
+          <th class="py-2 px-4 border-b">Stock</th>
+          <th class="py-2 px-4 border-b">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let console of consoles; let i = index" class="hover:bg-gray-100">
+          <td class="py-2 px-4 border-b">
+            <img *ngIf="console.imageUrl" [src]="console.imageUrl" [alt]="console.name" class="w-16 h-16 object-cover rounded" />
+            <span *ngIf="!console.imageUrl" class="text-gray-500">Sin imagen</span>
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editConsoleIndex !== i">{{ console.name }}</span>
+            <input *ngIf="editConsoleIndex === i" type="text" [(ngModel)]="editedConsole.name"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editConsoleIndex !== i">{{ console.category || 'N/A' }}</span>
+            <input *ngIf="editConsoleIndex === i" type="text" [(ngModel)]="editedConsole.category"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editConsoleIndex !== i">{{ console.description || 'Sin descripción' }}</span>
+            <textarea *ngIf="editConsoleIndex === i" [(ngModel)]="editedConsole.description"
+                      class="w-full border border-gray-300 px-2 py-1 rounded text-sm" rows="2"></textarea>
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editConsoleIndex !== i">{{ console.price | currency }}</span>
+            <input *ngIf="editConsoleIndex === i" type="number" [(ngModel)]="editedConsole.price"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editConsoleIndex !== i" [class]="getStockClass(console.stock)">{{ console.stock }}</span>
+            <input *ngIf="editConsoleIndex === i" type="number" [(ngModel)]="editedConsole.stock"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <div *ngIf="editConsoleIndex !== i" class="flex space-x-2">
+              <button (click)="startEditConsole(i)" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs">Editar</button>
+              <button (click)="deleteConsole(console, i)" class="px-2 py-1 bg-red-500 text-white rounded text-xs">Eliminar</button>
+            </div>
+            <div *ngIf="editConsoleIndex === i" class="flex space-x-2">
+              <button (click)="saveEditConsole(console)" class="px-2 py-1 bg-green-500 text-white rounded text-xs">Guardar</button>
+              <button (click)="cancelEditConsole()" class="px-2 py-1 bg-gray-500 text-white rounded text-xs">Cancelar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <div *ngIf="consoles.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
       No hay consolas disponibles
     </div>
-  </div> -->
+  </div>
 
   <!-- Sección de Accesorios -->
-  <!-- <div class="mb-8">
-    <h2 class="text-2xl font-bold mb-4">Accesorios</h2> -->
-    
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Accesorios</h2>
+
     <!-- Botón alternar formulario -->
-    <!-- <button (click)="showAddAccessoryForm = !showAddAccessoryForm"
+    <button (click)="showAddAccessoryForm = !showAddAccessoryForm"
             class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
       {{ showAddAccessoryForm ? 'Cancelar' : 'Agregar Accesorio' }}
-    </button> -->
+    </button>
 
-    <!-- Lista de Accesorios -->
-    <!-- <div *ngIf="accessories.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-      <div *ngFor="let accessory of accessories; let i = index" class="bg-white rounded-lg shadow-md p-4">
-        <div class="mb-3">
-          <img *ngIf="accessory.imageUrl" [src]="accessory.imageUrl" [alt]="accessory.name" class="w-full h-48 object-cover rounded">
-          <div *ngIf="!accessory.imageUrl" class="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
-            <span class="text-gray-500">Sin imagen</span>
-          </div>
-        </div>
-        <h3 class="font-semibold text-lg mb-2">{{ accessory.name }}</h3>
-        <p class="text-gray-600 mb-2">{{ accessory.description || 'Sin descripción' }}</p>
-        <p class="text-green-600 font-bold mb-2">{{ accessory.price | currency }}</p>
-        <p class="text-sm mb-2">
-          Stock: <span [class]="getStockClass(accessory.stock)">{{ accessory.stock }}</span>
-        </p>
-        <p class="text-sm text-gray-500 mb-3">Categoría: {{ accessory.category || 'N/A' }}</p>
-        
-        <div class="flex space-x-2">
-          <button (click)="startEditAccessory(i)" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
-            Editar
-          </button>
-          <button (click)="deleteAccessory(accessory, i)" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div> -->
+    <!-- Tabla de Accesorios -->
+    <table *ngIf="accessories.length > 0" class="min-w-full bg-white border border-gray-300 rounded">
+      <thead>
+        <tr>
+          <th class="py-2 px-4 border-b">Imagen</th>
+          <th class="py-2 px-4 border-b">Nombre</th>
+          <th class="py-2 px-4 border-b">Categoría</th>
+          <th class="py-2 px-4 border-b">Descripción</th>
+          <th class="py-2 px-4 border-b">Precio</th>
+          <th class="py-2 px-4 border-b">Stock</th>
+          <th class="py-2 px-4 border-b">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let accessory of accessories; let i = index" class="hover:bg-gray-100">
+          <td class="py-2 px-4 border-b">
+            <img *ngIf="accessory.imageUrl" [src]="accessory.imageUrl" [alt]="accessory.name" class="w-16 h-16 object-cover rounded" />
+            <span *ngIf="!accessory.imageUrl" class="text-gray-500">Sin imagen</span>
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editAccessoryIndex !== i">{{ accessory.name }}</span>
+            <input *ngIf="editAccessoryIndex === i" type="text" [(ngModel)]="editedAccessory.name"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editAccessoryIndex !== i">{{ accessory.category || 'N/A' }}</span>
+            <input *ngIf="editAccessoryIndex === i" type="text" [(ngModel)]="editedAccessory.category"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editAccessoryIndex !== i">{{ accessory.description || 'Sin descripción' }}</span>
+            <textarea *ngIf="editAccessoryIndex === i" [(ngModel)]="editedAccessory.description"
+                      class="w-full border border-gray-300 px-2 py-1 rounded text-sm" rows="2"></textarea>
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editAccessoryIndex !== i">{{ accessory.price | currency }}</span>
+            <input *ngIf="editAccessoryIndex === i" type="number" [(ngModel)]="editedAccessory.price"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <span *ngIf="editAccessoryIndex !== i" [class]="getStockClass(accessory.stock)">{{ accessory.stock }}</span>
+            <input *ngIf="editAccessoryIndex === i" type="number" [(ngModel)]="editedAccessory.stock"
+                   class="w-full border border-gray-300 px-2 py-1 rounded text-sm" />
+          </td>
+          <td class="py-2 px-4 border-b">
+            <div *ngIf="editAccessoryIndex !== i" class="flex space-x-2">
+              <button (click)="startEditAccessory(i)" class="px-2 py-1 bg-yellow-500 text-white rounded text-xs">Editar</button>
+              <button (click)="deleteAccessory(accessory, i)" class="px-2 py-1 bg-red-500 text-white rounded text-xs">Eliminar</button>
+            </div>
+            <div *ngIf="editAccessoryIndex === i" class="flex space-x-2">
+              <button (click)="saveEditAccessory(accessory)" class="px-2 py-1 bg-green-500 text-white rounded text-xs">Guardar</button>
+              <button (click)="cancelEditAccessory()" class="px-2 py-1 bg-gray-500 text-white rounded text-xs">Cancelar</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <div *ngIf="accessories.length === 0 && !isLoading" class="text-center py-8 text-gray-500">
       No hay accesorios disponibles

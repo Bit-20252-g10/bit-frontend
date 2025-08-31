@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
           this.isLoading = false;
 
           // Handle both HttpErrorResponse and simple error objects
-          const status = error.status || (error as any).status;
+          const status = error.status || (error as any).status || 0; // Ensure we have a fallback
           console.log('Final status:', status);
 
           if (status === 401) {

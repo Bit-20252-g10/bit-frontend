@@ -110,7 +110,8 @@ export class Productos implements OnInit {
     });
 
     // Cargar productos
-    this.productService.getAllProducts().subscribe({
+console.log('Cargando productos desde el backend...');
+this.productService.getAllProducts().subscribe({
       next: (response) => {
         console.log('Respuesta de getAllProducts:', response);
         if (response && response.allOK) {
@@ -178,25 +179,33 @@ export class Productos implements OnInit {
     }));
   }
 
-  convertProductsToProducts() {
-    const productProducts = this.allProducts.map((product) => {
+convertProductsToProducts() {
+    console.log('Convirtiendo productos del backend a productos de la interfaz...');
+    console.log('Productos recibidos del backend:', this.allProducts);
+
+    const productProducts = this.allProducts.map((product: any) => {
+      console.log('Campos del producto:', Object.keys(product));
       const type = this.getProductType(
-        product.category || (product as any).brand || ''
+        product.category || product.brand || ''
       );
-      console.log('Producto:', product, 'Tipo detectado:', type);
+      console.log('Producto:', product, 'Tipo detectado:', type, 'Precio:', product.price);
       return {
         id: product._id,
         name: product.name,
         type: type as 'consola' | 'accesorio',
-        price: product.price,
-        description: product.description,
+        price: product.price !== undefined ? product.price : product.precio,
+        description: product.description !== undefined ? product.description : product.descripcion,
         imageUrl: product.imageUrl,
         stock: product.stock,
-        brand: product.category || (product as any).brand,
-        category: product.category || (product as any).brand,
+        brand: product.category || product.brand,
+        category: product.category || product.brand,
       };
     });
+
+    console.log('Productos convertidos:', productProducts);
     this.products = [...this.products, ...productProducts];
+    console.log('Lista final de productos:', this.products);
+    this.applyFilters(); // Refrescar filtros y paginación después de actualizar productos
   }
 
   getProductType(category: string): string {

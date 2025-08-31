@@ -157,9 +157,11 @@ describe('Dashboard', () => {
       data: updatedGame 
     }));
     
+    // Set up the games array before starting edit
+    component.games = [...mockGames];
     component.startEdit(0);
-    component.editedGame.precio = 60000;
-    component.saveEdit(mockGames[0]);
+    component.editedGame = { ...component.editedGame, precio: 60000, stock: 10 };
+    component.saveEdit();
     
     tick();
     expect(gamesServiceMock.updateGame).toHaveBeenCalledWith('1', { precio: 60000, stock: 10 });
