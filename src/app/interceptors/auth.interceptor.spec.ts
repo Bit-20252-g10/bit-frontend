@@ -25,7 +25,7 @@ describe('AuthInterceptor', () => {
     localStorage.clear();
   });
 
-  it('should add authorization header when token exists', () => {
+  it('debería agregar un encabezado de autorización cuando exista el token', () => {
     const testToken = 'test-token-123';
     localStorage.setItem('authToken', testToken);
 
@@ -36,7 +36,7 @@ describe('AuthInterceptor', () => {
     expect(req.request.headers.get('Authorization')).toBe(`Bearer ${testToken}`);
   });
 
-  it('should not add authorization header when no token exists', () => {
+  it('no debería agregar un encabezado de autorización cuando no exista el token', () => {
     localStorage.removeItem('authToken');
 
     httpClient.get('/api/test').subscribe();
@@ -45,7 +45,7 @@ describe('AuthInterceptor', () => {
     expect(req.request.headers.has('Authorization')).toBeFalsy();
   });
 
-  it('should handle 401 errors by clearing storage', () => {
+  it('debería manejar errores 401 limpiando el almacenamiento', () => {
     localStorage.setItem('authToken', 'test-token');
     localStorage.setItem('userData', '{"name":"test"}');
 
@@ -62,7 +62,7 @@ describe('AuthInterceptor', () => {
     expect(localStorage.getItem('userData')).toBeNull();
   });
 
-  it('should be created', () => {
+  it('Deberia crear', () => {
     expect(httpClient).toBeTruthy();
   });
 });

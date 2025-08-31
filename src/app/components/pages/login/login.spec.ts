@@ -57,7 +57,7 @@ describe('LoginComponent', () => {
     expect(authServiceMock.login).toHaveBeenCalledWith('test@test.com', '123456');
   });
 
-  it('should handle login error', fakeAsync(() => {
+  it('debería manejar el error de inicio de sesión', fakeAsync(() => {
     const errorResponse = new HttpErrorResponse({
       status: 401,
       statusText: 'Unauthorized',
@@ -74,7 +74,7 @@ describe('LoginComponent', () => {
     expect(toastrMock.error).toHaveBeenCalledWith('Credenciales incorrectas', 'Error de autenticación');
   }));
 
-  it('should navigate to panel on successful login', () => {
+  it('debería navegar al panel en caso de inicio de sesión exitoso', () => {
     const mockResponse: LoginResponse = {
       token: 'test-token',
       user: { id: '1', email: 'test@test.com', name: 'Test User' }
@@ -89,14 +89,14 @@ describe('LoginComponent', () => {
     expect(toastrMock.success).toHaveBeenCalledWith('Inicio de sesión exitoso', '¡Bienvenido!');
   });
 
-  it('should not submit invalid form', () => {
+  it('no debería enviar un formulario inválido', () => {
     component.loginForm.setValue({ email: 'invalid-email', password: '123' });
     component.onSubmit();
     
     expect(authServiceMock.login).not.toHaveBeenCalled();
   });
 
-  it('should mark form as touched when submitting invalid form', () => {
+  it('debería marcar el formulario como tocado al enviar un formulario inválido', () => {
     component.loginForm.setValue({ email: '', password: '' });
     
     component.onSubmit();

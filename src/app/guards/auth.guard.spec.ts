@@ -16,7 +16,7 @@ describe('AuthGuard', () => {
     router = TestBed.inject(Router);
   });
 
-  it('should be created', () => {
+  it('debe ser creado', () => {
     expect(guard).toBeTruthy();
   });
 });

@@ -54,11 +54,11 @@ describe('Juegos', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('Deberia crear el componente', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load games on init', () => {
+  it('Deberia cargar los juegos al inicializarse', () => {
     expect(gamesServiceMock.getAllGames).toHaveBeenCalled();
   });
 });

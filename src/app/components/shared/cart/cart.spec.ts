@@ -32,11 +32,11 @@ describe('Cart', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load cart items on init', () => {
+  it('debería cargar los elementos del carrito al inicializarse', () => {
     expect(cartServiceMock.getCartItems).toHaveBeenCalled();
   });
 });

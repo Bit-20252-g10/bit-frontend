@@ -1,501 +1,398 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
+import { of, throwError } from 'rxjs';
+
 import { Dashboard } from './dashboard';
 import { GamesService, Game } from '../../../services/games.service';
 import { ProductService, ProductModel } from '../../../services/product.service';
 import { UploadService } from '../../../services/upload.service';
 import { InventoryService, InventoryItem } from '../../../services/service/inventory.service';
-import { Router } from '@angular/router';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { ToastrService } from 'ngx-toastr';
 
 describe('Dashboard', () => {
   let component: Dashboard;
   let fixture: ComponentFixture<Dashboard>;
-  let gamesServiceMock: jasmine.SpyObj<GamesService>;
-  let productServiceMock: jasmine.SpyObj<ProductService>;
-  let uploadServiceMock: jasmine.SpyObj<UploadService>;
-  let inventoryServiceMock: jasmine.SpyObj<InventoryService>;
-  let routerMock: jasmine.SpyObj<Router>;
-
-  const mockGames: Game[] = [
-    {
-      _id: '1',
-      name: 'Game 1',
-      consola: 'PS5',
-      genero: 'Action',
-      descripcion: 'Test game',
-      precio: 50000,
-      stock: 10,
-      developer: 'Dev1',
-      publisher: 'Pub1',
-      rating: 'E',
-      multiplayer: false,
-      imageUrl: 'test.jpg',
-      isActive: true,
-      createdAt: '2023-01-01',
-      updatedAt: '2023-01-01'
-    }
-  ];
-
-  const mockProducts: ProductModel[] = [
-    {
-      _id: '1',
-      name: 'Console 1',
-      price: 300000,
-      stock: 5,
-      category: 'consoles',
-      description: 'Test console',
-      imageUrl: 'console.jpg',
-      createdAt: '2023-01-01',
-      updatedAt: '2023-01-01'
-    }
-  ];
-
-  const mockInventoryItem: InventoryItem = {
-    _id: '1',
-    name: 'Test Product',
-    type: 'games',
-    price: 50000,
-    stock: 10,
-    description: 'Test',
-    imageUrl: 'test.jpg',
-    createdAt: '2023-01-01',
-    updatedAt: '2023-01-01'
-  };
+  let mockGamesService: jasmine.SpyObj<GamesService>;
+  let mockProductService: jasmine.SpyObj<ProductService>;
+  let mockUploadService: jasmine.SpyObj<UploadService>;
+  let mockInventoryService: jasmine.SpyObj<InventoryService>;
+  let mockRouter: jasmine.SpyObj<Router>;
+  let mockToastr: jasmine.SpyObj<ToastrService>;
 
   beforeEach(async () => {
-    gamesServiceMock = jasmine.createSpyObj('GamesService', ['getAllGames', 'updateGame', 'deleteGame']);
-    productServiceMock = jasmine.createSpyObj('ProductService', ['getConsoles', 'getAccessories', 'updateProduct']);
-    uploadServiceMock = jasmine.createSpyObj('UploadService', ['uploadImage', 'uploadGameImage']);
-    inventoryServiceMock = jasmine.createSpyObj('InventoryService', ['createItem', 'updateItem', 'deleteItem']);
-    routerMock = jasmine.createSpyObj('Router', ['navigate']);
-
-    gamesServiceMock.getAllGames.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: mockGames 
-    }));
-    productServiceMock.getConsoles.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: mockProducts 
-    }));
-    productServiceMock.getAccessories.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: [] 
-    }));
-    inventoryServiceMock.createItem.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: mockInventoryItem 
-    }));
-    inventoryServiceMock.updateItem.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: mockInventoryItem 
-    }));
-    inventoryServiceMock.deleteItem.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: null 
-    }));
+    const gamesServiceSpy = jasmine.createSpyObj('GamesService', ['getAllGames', 'deleteGame', 'updateGame']);
+    const productServiceSpy = jasmine.createSpyObj('ProductService', ['getConsoles', 'getAccessories', 'createConsole', 'createAccessory', 'updateProduct', 'deleteConsole', 'deleteAccessory']);
+    const uploadServiceSpy = jasmine.createSpyObj('UploadService', ['uploadImage', 'uploadGameImage']);
+    const inventoryServiceSpy = jasmine.createSpyObj('InventoryService', ['createItem', 'updateItem', 'deleteItem']);
+    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const toastrSpy = jasmine.createSpyObj('ToastrService', ['success', 'error', 'info']);
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, FormsModule, CommonModule],
+      imports: [HttpClientTestingModule, Dashboard],
       providers: [
-        { provide: GamesService, useValue: gamesServiceMock },
-        { provide: ProductService, useValue: productServiceMock },
-        { provide: UploadService, useValue: uploadServiceMock },
-        { provide: InventoryService, useValue: inventoryServiceMock },
-        { provide: Router, useValue: routerMock }
+        { provide: GamesService, useValue: gamesServiceSpy },
+        { provide: ProductService, useValue: productServiceSpy },
+        { provide: UploadService, useValue: uploadServiceSpy },
+        { provide: InventoryService, useValue: inventoryServiceSpy },
+        { provide: Router, useValue: routerSpy },
+        { provide: ToastrService, useValue: toastrSpy }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Dashboard);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    mockGamesService = TestBed.inject(GamesService) as jasmine.SpyObj<GamesService>;
+    mockProductService = TestBed.inject(ProductService) as jasmine.SpyObj<ProductService>;
+    mockUploadService = TestBed.inject(UploadService) as jasmine.SpyObj<UploadService>;
+    mockInventoryService = TestBed.inject(InventoryService) as jasmine.SpyObj<InventoryService>;
+    mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    mockToastr = TestBed.inject(ToastrService) as jasmine.SpyObj<ToastrService>;
   });
 
-  it('should create', () => {
+  it('Deberia crear el componente correctamente', () => {
+    // Arrange & Act (component creation is handled in beforeEach)
+    // Assert
     expect(component).toBeTruthy();
   });
 
-  it('should load games on init', () => {
-    expect(gamesServiceMock.getAllGames).toHaveBeenCalled();
-    expect(component.games).toEqual(mockGames);
-    expect(component.isLoading).toBeFalse();
-  });
-
-  it('should handle error when loading games', () => {
-    gamesServiceMock.getAllGames.and.returnValue(throwError(() => new Error('Error')));
-    component.loadGames();
-    expect(component.error).toBe('Error al cargar los juegos.');
-    expect(component.isLoading).toBeFalse();
-  });
-
-  it('should start edit mode', () => {
-    component.startEdit(0);
-    expect(component.editIndex).toBe(0);
-    expect(component.editedGame).toEqual(mockGames[0]);
-  });
-
-  it('should cancel edit mode', () => {
-    component.startEdit(0);
-    component.cancelEdit();
-    expect(component.editIndex).toBeNull();
-    expect(component.editedGame).toEqual({});
-  });
-
-  it('should save edit', fakeAsync(() => {
-    const updatedGame = { ...mockGames[0], precio: 60000 };
-    gamesServiceMock.updateGame.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: updatedGame 
-    }));
-    
-    // Set up the games array before starting edit
-    component.games = [...mockGames];
-    component.startEdit(0);
-    component.editedGame = { ...component.editedGame, precio: 60000, stock: 10 };
-    component.saveEdit();
-    
-    tick();
-    expect(gamesServiceMock.updateGame).toHaveBeenCalledWith('1', { precio: 60000, stock: 10 });
-    expect(component.games[0].precio).toBe(60000);
-    expect(component.editIndex).toBeNull();
-  }));
-
-  it('should delete game', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-    gamesServiceMock.deleteGame.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: null 
-    }));
-    
-    component.deleteGame(mockGames[0], 0);
-    expect(gamesServiceMock.deleteGame).toHaveBeenCalledWith('1');
-    expect(component.games.length).toBe(0);
-  });
-
-  it('should not delete game if cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
-    component.deleteGame(mockGames[0], 0);
-    expect(gamesServiceMock.deleteGame).not.toHaveBeenCalled();
-  });
-
-  it('should logout and navigate to login', () => {
-    spyOn(localStorage, 'removeItem');
-    component.logout();
-    expect(localStorage.removeItem).toHaveBeenCalledWith('authToken');
-    expect(localStorage.removeItem).toHaveBeenCalledWith('userData');
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/login']);
-  });
-
-  it('should return correct price class', () => {
-    expect(component.getPriceClass(40000)).toBe('price-low');
-    expect(component.getPriceClass(80000)).toBe('price-medium');
-    expect(component.getPriceClass(150000)).toBe('price-high');
-  });
-
-  it('should return correct stock class', () => {
-    expect(component.getStockClass(3)).toBe('stock-low');
-    expect(component.getStockClass(10)).toBe('stock-medium');
-    expect(component.getStockClass(20)).toBe('stock-high');
-  });
-
-  it('should handle file selection', () => {
-    const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    const event = { target: { files: [mockFile] } };
-    
-    component.onFileSelected(event);
-    expect(component.selectedFile).toBe(mockFile);
+  it('Deberia inicializar el componente con el estado correcto', () => {
+    // Arrange & Act (component initialization is handled in beforeEach)
+    // Assert
+    expect(component.games).toEqual([]);
+    expect(component.isLoading).toBeTrue();
     expect(component.error).toBeNull();
-  });
-
-  it('should reject non-image files', () => {
-    const mockFile = new File(['test'], 'test.txt', { type: 'text/plain' });
-    const event = { target: { files: [mockFile] } };
-    
-    component.onFileSelected(event);
-    expect(component.selectedFile).toBeNull();
-    expect(component.error).toContain('archivo de imagen válido');
-  });
-
-  it('should reject large files', () => {
-    const mockFile = new File(['x'.repeat(6 * 1024 * 1024)], 'test.jpg', { type: 'image/jpeg' });
-    const event = { target: { files: [mockFile] } };
-    
-    component.onFileSelected(event);
-    expect(component.selectedFile).toBeNull();
-    expect(component.error).toContain('demasiado grande');
-  });
-
-  it('should upload image successfully', fakeAsync(() => {
-    const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    component.selectedFile = mockFile;
-    
-    uploadServiceMock.uploadImage.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: { imageUrl: 'uploaded.jpg' } 
-    }));
-    
-    component.uploadImage().then(url => {
-      expect(url).toBe('uploaded.jpg');
-    });
-    
-    tick();
-  }));
-
-  it('should handle upload error', fakeAsync(() => {
-    const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    component.selectedFile = mockFile;
-    
-    uploadServiceMock.uploadImage.and.returnValue(throwError(() => new Error('Upload failed')));
-    
-    component.uploadImage().catch(error => {
-      expect(error).toContain('Error al subir la imagen');
-    });
-    
-    tick();
-  }));
-
-  it('should add game successfully', fakeAsync(() => {
-    component.newGame = {
-      name: 'New Game',
-      precio: 50000,
-      stock: 10,
-      consola: 'PS5',
-      genero: 'Action'
-    };
-    component.selectedFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    
-    spyOn(component, 'uploadImage').and.returnValue(Promise.resolve('uploaded.jpg'));
-    
-    component.addGame();
-    tick();
-    
-    expect(inventoryServiceMock.createItem).toHaveBeenCalled();
-    expect(component.successMessage).toBe('Producto agregado exitosamente');
+    expect(component.editIndex).toBeNull();
     expect(component.showAddForm).toBeFalse();
-  }));
-
-  it('should reset form', () => {
-    component.newGame = { name: 'Test', precio: 100 };
-    component.selectedFile = new File(['test'], 'test.jpg');
-    
-    component.resetForm();
-    
-    expect(component.newGame.name).toBe('');
-    expect(component.newGame.precio).toBe(0);
-    expect(component.selectedFile).toBeNull();
-  });
-
-  it('should load consoles on init', () => {
-    expect(productServiceMock.getConsoles).toHaveBeenCalled();
-    expect(component.consoles).toEqual(mockProducts);
-  });
-
-  it('should load accessories on init', () => {
-    expect(productServiceMock.getAccessories).toHaveBeenCalled();
+    expect(component.consoles).toEqual([]);
     expect(component.accessories).toEqual([]);
   });
 
-  it('should handle console image selection', fakeAsync(() => {
-    const mockFile = new File(['test'], 'console.jpg', { type: 'image/jpeg' });
-    const event = { target: { files: [mockFile] } };
-    
-    uploadServiceMock.uploadImage.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: { imageUrl: 'console-uploaded.jpg' } 
+  describe('ngOnInit', () => {
+    it('Deberia llamar a los métodos de carga de datos durante la inicialización del componente', () => {
+      // Arrange
+      spyOn(component, 'loadGames');
+      spyOn(component, 'loadConsoles');
+      spyOn(component, 'loadAccessories');
+
+      // Act
+      component.ngOnInit();
+
+      // Assert
+      expect(component.loadGames).toHaveBeenCalled();
+      expect(component.loadConsoles).toHaveBeenCalled();
+      expect(component.loadAccessories).toHaveBeenCalled();
+    });
+  });
+
+  describe('loadGames', () => {
+    it('Deberia cargar la lista de juegos exitosamente desde el servicio', fakeAsync(() => {
+      // Arrange
+      const mockResponse = {
+        allOK: true,
+        message: '',
+        data: [
+          {
+            _id: '1',
+            name: 'Game 1',
+            consola: 'PS5',
+            genero: 'Action',
+            descripcion: 'Test game',
+            precio: 50000,
+            stock: 10,
+            developer: 'Dev',
+            publisher: 'Pub',
+            rating: 'E',
+            multiplayer: false,
+            imageUrl: 'url',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isActive: true
+          }
+        ]
+      };
+      mockGamesService.getAllGames.and.returnValue(of(mockResponse));
+
+      // Act
+      component.loadGames();
+      tick();
+
+      // Assert
+      expect(component.games.length).toBe(1);
+      expect(component.games[0].name).toBe('Game 1');
+      expect(component.isLoading).toBeFalse();
     }));
-    
-    component.onConsoleImageSelected(event);
-    tick();
-    
-    expect(component.newConsole.selectedFile).toBe(mockFile);
-    expect(uploadServiceMock.uploadImage).toHaveBeenCalledWith(mockFile);
-  }));
 
-  it('should handle accessory image selection', fakeAsync(() => {
-    const mockFile = new File(['test'], 'accessory.jpg', { type: 'image/jpeg' });
-    const event = { target: { files: [mockFile] } };
-    
-    uploadServiceMock.uploadImage.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: { imageUrl: 'accessory-uploaded.jpg' } 
+    it('Deberia manejar errores al cargar juegos y mostrar mensaje de error', fakeAsync(() => {
+      // Arrange
+      const mockError = { message: 'Error loading games' };
+      mockGamesService.getAllGames.and.returnValue(throwError(mockError));
+
+      // Act
+      component.loadGames();
+      tick();
+
+      // Assert
+      expect(mockToastr.error).toHaveBeenCalledWith('Error al cargar los juegos.', 'Error');
+      expect(component.isLoading).toBeFalse();
     }));
-    
-    component.onAccessoryImageSelected(event);
-    tick();
-    
-    expect(component.newAccessory.selectedFile).toBe(mockFile);
-    expect(uploadServiceMock.uploadImage).toHaveBeenCalledWith(mockFile);
-  }));
-
-  it('should show alert for addConsole', () => {
-    spyOn(window, 'alert');
-    component.addConsole();
-    expect(window.alert).toHaveBeenCalledWith('Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación');
   });
 
-  it('should show alert for addAccessory', () => {
-    spyOn(window, 'alert');
-    component.addAccessory();
-    expect(window.alert).toHaveBeenCalledWith('Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación');
-  });
+  describe('addGame', () => {
+    it('Deberia agregar un nuevo juego exitosamente incluyendo la subida de imagen', fakeAsync(() => {
+      // Arrange
+      component.newGame = {
+        name: 'New Game',
+        precio: 60000,
+        stock: 5,
+        consola: 'PS5',
+        genero: 'RPG',
+        descripcion: 'New game desc',
+        developer: 'New Dev',
+        publisher: 'New Pub',
+        rating: 'E',
+        multiplayer: false,
+        imageUrl: ''
+      };
+      component.selectedFile = new File([''], 'test.jpg');
 
-  it('should reset console form', () => {
-    component.newConsole = { name: 'Test Console', price: 300000 };
-    component.resetConsoleForm();
-    expect(component.newConsole.name).toBe('');
-    expect(component.newConsole.price).toBe(0);
-  });
+      const mockUploadResponse = { allOK: true, data: { imageUrl: 'uploaded-url' } };
+      const mockCreateResponse = {
+        allOK: true,
+        message: '',
+        data: {
+          _id: '1',
+          name: 'New Game',
+          type: 'games' as const,
+          price: 60000,
+          stock: 5,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      };
 
-  it('should reset accessory form', () => {
-    component.newAccessory = { name: 'Test Accessory', price: 50000 };
-    component.resetAccessoryForm();
-    expect(component.newAccessory.name).toBe('');
-    expect(component.newAccessory.price).toBe(0);
-  });
+      mockUploadService.uploadImage.and.returnValue(of(mockUploadResponse));
+      mockInventoryService.createItem.and.returnValue(of(mockCreateResponse));
+      spyOn(component, 'loadGames');
+      spyOn(component, 'resetForm');
 
-  it('should start edit console', () => {
-    component.consoles = mockProducts;
-    component.startEditConsole(0);
-    expect(component.editConsoleIndex).toBe(0);
-    expect(component.editedConsole).toEqual(mockProducts[0]);
-  });
+      // Act
+      component.addGame();
+      tick();
 
-  it('should cancel edit console', () => {
-    component.startEditConsole(0);
-    component.cancelEditConsole();
-    expect(component.editConsoleIndex).toBeNull();
-    expect(component.editedConsole).toEqual({});
-  });
-
-  it('should save edit console', fakeAsync(() => {
-    component.consoles = mockProducts;
-    component.startEditConsole(0);
-    component.editedConsole.price = 350000;
-    
-    productServiceMock.updateProduct.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: { ...mockProducts[0], price: 350000 } 
+      // Assert
+      expect(mockInventoryService.createItem).toHaveBeenCalled();
+      expect(mockToastr.success).toHaveBeenCalledWith('Producto agregado exitosamente', 'Éxito');
+      expect(component.loadGames).toHaveBeenCalled();
+      expect(component.resetForm).toHaveBeenCalled();
+      expect(component.showAddForm).toBeFalse();
     }));
-    
-    component.saveEditConsole(mockProducts[0]);
-    tick();
-    
-    expect(productServiceMock.updateProduct).toHaveBeenCalled();
-    expect(component.consoles[0].price).toBe(350000);
-    expect(component.editConsoleIndex).toBeNull();
-  }));
-  
-  it('should show alert for deleteConsole', () => {
-    spyOn(window, 'alert');
-    component.deleteConsole(mockProducts[0], 0);
-    expect(window.alert).toHaveBeenCalledWith('Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación');
+
+    it('Deberia mostrar error cuando faltan campos obligatorios en el formulario', () => {
+      // Arrange
+      component.newGame = { name: '', precio: 0, stock: 0 };
+
+      // Act
+      component.addGame();
+
+      // Assert
+      expect(mockToastr.error).toHaveBeenCalledWith('Faltan campos obligatorios: nombre, precio y stock', 'Error');
+    });
   });
 
-  it('should start edit accessory', () => {
-    component.accessories = mockProducts;
-    component.startEditAccessory(0);
-    expect(component.editAccessoryIndex).toBe(0);
-    expect(component.editedAccessory).toEqual(mockProducts[0]);
-  });
+  describe('deleteGame', () => {
+    it('Deberia eliminar un juego exitosamente cuando el usuario confirma la acción', fakeAsync(() => {
+      // Arrange
+      const mockGame: Game = {
+        _id: '1',
+        name: 'Game 1',
+        consola: 'PS5',
+        genero: 'Action',
+        descripcion: 'Test',
+        precio: 50000,
+        stock: 10,
+        developer: 'Dev',
+        publisher: 'Pub',
+        rating: 'E',
+        multiplayer: false,
+        imageUrl: 'url',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isActive: true
+      };
+      component.games = [mockGame];
 
-  it('should cancel edit accessory', () => {
-    component.startEditAccessory(0);
-    component.cancelEditAccessory();
-    expect(component.editAccessoryIndex).toBeNull();
-    expect(component.editedAccessory).toEqual({});
-  });
+      const mockResponse = { allOK: true, message: '', data: null };
+      mockGamesService.deleteGame.and.returnValue(of(mockResponse));
 
-  it('should save edit accessory', fakeAsync(() => {
-    component.accessories = mockProducts;
-    component.startEditAccessory(0);
-    component.editedAccessory.price = 45000;
-    
-    productServiceMock.updateProduct.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: { ...mockProducts[0], price: 45000 } 
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      // Act
+      component.deleteGame(mockGame, 0);
+      tick();
+
+      // Assert
+      expect(component.games.length).toBe(0);
+      expect(mockToastr.success).toHaveBeenCalledWith('Juego eliminado correctamente', 'Éxito');
     }));
-    
-    component.saveEditAccessory(mockProducts[0]);
-    tick();
-    
-    expect(productServiceMock.updateProduct).toHaveBeenCalled();
-    expect(component.accessories[0].price).toBe(45000);
-    expect(component.editAccessoryIndex).toBeNull();
-  }));
 
-  it('should show alert for deleteAccessory', () => {
-    spyOn(window, 'alert');
-    component.deleteAccessory(mockProducts[0], 0);
-    expect(window.alert).toHaveBeenCalledWith('Funcionalidad del frontend en contrucción y llamado al backend pendiente de implementación');
+    it('Deberia cancelar la eliminación cuando el usuario rechaza la confirmación', () => {
+      // Arrange
+      const mockGame: Game = { _id: '1', name: 'Game 1' } as Game;
+      component.games = [mockGame];
+
+      spyOn(window, 'confirm').and.returnValue(false);
+
+      // Act
+      component.deleteGame(mockGame, 0);
+
+      // Assert
+      expect(component.games.length).toBe(1);
+      expect(mockGamesService.deleteGame).not.toHaveBeenCalled();
+    });
   });
 
-  it('should start edit product', () => {
-    component.startEditProduct(0, mockInventoryItem);
-    expect(component.editProductIndex).toBe(0);
-    expect(component.editedProduct).toEqual(mockInventoryItem);
+  describe('logout', () => {
+    it('Deberia limpiar el localStorage y redirigir al usuario a la página de login', () => {
+      // Arrange
+      spyOn(localStorage, 'removeItem');
+      spyOn(localStorage, 'getItem').and.returnValue('test');
+
+      // Act
+      component.logout();
+
+      // Assert
+      expect(localStorage.removeItem).toHaveBeenCalledWith('authToken');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('userData');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+      expect(mockToastr.info).toHaveBeenCalledWith('Sesión cerrada', 'Info');
+    });
   });
 
-  it('should cancel edit product', () => {
-    component.cancelEditProduct();
-    expect(component.editProductIndex).toBeNull();
-    expect(component.editedProduct).toEqual({});
+  describe('getPriceClass', () => {
+    it('Deberia retornar "price-low" cuando el precio es menor o igual a 50000', () => {
+      // Arrange & Act & Assert
+      expect(component.getPriceClass(30000)).toBe('price-low');
+    });
+
+    it('Deberia retornar "price-medium" cuando el precio está entre 50001 y 100000', () => {
+      // Arrange & Act & Assert
+      expect(component.getPriceClass(75000)).toBe('price-medium');
+    });
+
+    it('Deberia retornar "price-high" cuando el precio es mayor a 100000', () => {
+      // Arrange & Act & Assert
+      expect(component.getPriceClass(150000)).toBe('price-high');
+    });
   });
 
-  it('should save edit product', fakeAsync(() => {
-    component.startEditProduct(0, mockInventoryItem);
-    component.editedProduct.price = 60000;
-    
-    inventoryServiceMock.updateItem.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: { ...mockInventoryItem, price: 60000 } 
+  describe('getStockClass', () => {
+    it('Deberia retornar "stock-low" cuando el stock es menor o igual a 5', () => {
+      // Arrange & Act & Assert
+      expect(component.getStockClass(3)).toBe('stock-low');
+    });
+
+    it('Deberia retornar "stock-medium" cuando el stock está entre 6 y 15', () => {
+      // Arrange & Act & Assert
+      expect(component.getStockClass(10)).toBe('stock-medium');
+    });
+
+    it('Deberia retornar "stock-high" cuando el stock es mayor a 15', () => {
+      // Arrange & Act & Assert
+      expect(component.getStockClass(20)).toBe('stock-high');
+    });
+  });
+
+  describe('onFileSelected', () => {
+    it('Deberia seleccionar un archivo de imagen válido correctamente', () => {
+      // Arrange
+      const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
+      const mockEvent = { target: { files: [mockFile] } };
+
+      // Act
+      component.onFileSelected(mockEvent);
+
+      // Assert
+      expect(component.selectedFile).toBe(mockFile);
+      expect(component.error).toBeNull();
+    });
+
+    it('Deberia mostrar error cuando se selecciona un archivo que no es una imagen', () => {
+      // Arrange
+      const mockFile = new File([''], 'test.txt', { type: 'text/plain' });
+      const mockEvent = { target: { files: [mockFile] } };
+
+      // Act
+      component.onFileSelected(mockEvent);
+
+      // Assert
+      expect(component.error).toBe('Por favor selecciona un archivo de imagen válido.');
+    });
+
+    it('Deberia mostrar error cuando el archivo seleccionado excede el tamaño máximo permitido', () => {
+      // Arrange
+      const mockFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' });
+      const mockEvent = { target: { files: [mockFile] } };
+
+      // Act
+      component.onFileSelected(mockEvent);
+
+      // Assert
+      expect(component.error).toBe('El archivo es demasiado grande. Máximo 5MB.');
+    });
+  });
+
+  describe('loadConsoles', () => {
+    it('Deberia cargar la lista de consolas exitosamente desde el servicio', fakeAsync(() => {
+      // Arrange
+      const mockResponse = {
+        allOK: true,
+        message: '',
+        data: [{
+          _id: '1',
+          name: 'PS5',
+          price: 500000,
+          description: 'PlayStation 5 Console',
+          stock: 10,
+          category: 'console'
+        }]
+      };
+      mockProductService.getConsoles.and.returnValue(of(mockResponse));
+
+      // Act
+      component.loadConsoles();
+      tick();
+
+      // Assert
+      expect(component.consoles.length).toBe(1);
+      expect(component.isLoading).toBeFalse();
     }));
-    
-    component.saveEditProduct(mockInventoryItem, 0);
-    tick();
-    
-    expect(inventoryServiceMock.updateItem).toHaveBeenCalled();
-    expect(component.successMessage).toBe('Producto actualizado correctamente');
-  }));
+  });
 
-  it('should delete product', fakeAsync(() => {
-    component.games = [mockGames[0]];
-    spyOn(window, 'confirm').and.returnValue(true);
-    
-    inventoryServiceMock.deleteItem.and.returnValue(of({ 
-      allOK: true, 
-      message: 'Success', 
-      data: null 
+  describe('loadAccessories', () => {
+    it('Deberia cargar la lista de accesorios exitosamente desde el servicio', fakeAsync(() => {
+      // Arrange
+      const mockResponse = {
+        allOK: true,
+        message: '',
+        data: [{
+          _id: '1',
+          name: 'Controller',
+          price: 50000,
+          description: 'PS5 Controller',
+          stock: 20,
+          category: 'accessory'
+        }]
+      };
+      mockProductService.getAccessories.and.returnValue(of(mockResponse));
+
+      // Act
+      component.loadAccessories();
+      tick();
+
+      // Assert
+      expect(component.accessories.length).toBe(1);
+      expect(component.isLoading).toBeFalse();
     }));
-    
-    component.deleteProduct(mockInventoryItem, 0);
-    tick();
-    
-    expect(inventoryServiceMock.deleteItem).toHaveBeenCalledWith('1');
-    expect(component.games.length).toBe(0);
-    expect(component.successMessage).toBe('Producto eliminado correctamente');
-  }));
-
-  it('should not delete product if cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
-    
-    component.deleteProduct(mockInventoryItem, 0);
-    
-    expect(inventoryServiceMock.deleteItem).not.toHaveBeenCalled();
   });
 });

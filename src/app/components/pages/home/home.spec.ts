@@ -43,11 +43,11 @@ describe('Home', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('debería ser creado', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load home data on init', () => {
+  it('debería cargar los datos del hogar al inicializarse', () => {
     expect(homeServiceMock.getHomeData).toHaveBeenCalled();
   });
 });
