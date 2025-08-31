@@ -172,7 +172,7 @@ export class Juegos implements OnInit {
       this.cartService.addToCart({
         id: game._id,
         name: game.name,
-        price: game.precio,
+        price: (game as any).price,
         type: 'juego',
         imageUrl: game.imageUrl,
         brand: game.publisher,
